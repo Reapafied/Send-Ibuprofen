@@ -55,6 +55,11 @@ export default function App() {
   const [masterPool, setMasterPool] = useState(DEFAULT_CHALLENGES);
   
   const [myPlayerId] = useState(() => {
+      const linkedPlayerId = new URLSearchParams(window.location.search).get('player');
+      if (linkedPlayerId && /^p_[a-z0-9]{7}$/.test(linkedPlayerId)) {
+          localStorage.setItem('wow_bingo_user_id', linkedPlayerId);
+          return linkedPlayerId;
+      }
       const savedId = localStorage.getItem('wow_bingo_user_id');
       if (savedId) return savedId;
       const newId = 'p_' + Math.random().toString(36).substring(2, 9);
@@ -133,6 +138,11 @@ export default function App() {
           if (val) {
               setRoomData(val);
               setSyncStatus({ text: 'Connected', color: 'text-amber-400' });
+              const savedPlayer = val.players?.[myPlayerId];
+              if (savedPlayer?.name && savedPlayer.name !== myPlayerName) {
+                  setMyPlayerName(savedPlayer.name);
+                  localStorage.setItem('wow_bingo_user_name', savedPlayer.name);
+              }
               if (!val.players?.[myPlayerId]) {
                   registerUserInRoom(roomId, database);
               }
@@ -150,7 +160,8 @@ export default function App() {
 
   const handleDatabaseError = (error) => {
       console.error('Firebase database operation failed:', error);
-      setSyncStatus({ text: 'Database error', color: 'text-red-400' });
+      const reason = error?.code || error?.message || 'Unknown error';
+      setSyncStatus({ text: `Database error (${reason})`, color: 'text-red-400' });
   };
 
   const playSound = (type) => {
@@ -291,6 +302,14 @@ export default function App() {
       const shareableUrl = `${baseUrl}?room=${encodeURIComponent(currentRoomId)}`;
       navigator.clipboard.writeText(shareableUrl);
       alert("Room link copied to clipboard:\n" + shareableUrl);
+  };
+
+  const sharePlayerSessionLink = () => {
+      const shareableUrl = new URL(window.location.href);
+      shareableUrl.searchParams.set('room', currentRoomId);
+      shareableUrl.searchParams.set('player', myPlayerId);
+      navigator.clipboard.writeText(shareableUrl.toString());
+      alert("Player session link copied to clipboard. Anyone with this link can use this player's card:\n" + shareableUrl);
   };
 
   const allPlayers = Object.values(roomData.players || {});
@@ -487,9 +506,14 @@ export default function App() {
 
                     <div className="mt-auto pt-4 border-t border-[#3f2d2d] flex items-center justify-between text-xs text-gray-400">
                         <span>Room: <strong className="text-gray-200">{currentRoomId}</strong></span>
-                        <button onClick={shareRoomLink} className="text-amber-400 hover:underline flex items-center gap-1">
-                            <i className="fa-solid fa-share-nodes"></i> Share Link
-                        </button>
+                        <div className="flex items-center gap-3">
+                            <button onClick={shareRoomLink} className="text-amber-400 hover:underline flex items-center gap-1">
+                                <i className="fa-solid fa-share-nodes"></i> Invite to Room
+                            </button>
+                            <button onClick={sharePlayerSessionLink} className="text-amber-400 hover:underline flex items-center gap-1">
+                                <i className="fa-solid fa-link"></i> Link This Player
+                            </button>
+                        </div>
                     </div>
                 </div>
             </aside>
