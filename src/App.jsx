@@ -134,17 +134,15 @@ export default function App() {
               setRoomData(val);
               setSyncStatus({ text: 'Connected', color: 'text-amber-400' });
               if (!val.players?.[myPlayerId]) {
-                  registerUserInRoom(roomId, database, val);
+                  registerUserInRoom(roomId, database);
               }
           } else {
-              update(roomNodeRef, { seed: 'BARRENS2026' })
-                  .then(() => registerUserInRoom(roomId, database, {}))
-                  .catch(handleDatabaseError);
+              update(roomNodeRef, { seed: 'BARRENS2026' }).catch(handleDatabaseError);
           }
       }, handleDatabaseError);
   };
 
-  const registerUserInRoom = (roomId, database, existingRoomData) => {
+  const registerUserInRoom = (roomId, database) => {
       const playerRef = ref(database, `wow_bingo_rooms/${roomId}/players/${myPlayerId}`);
       set(playerRef, { id: myPlayerId, name: myPlayerName, stamps: { 12: true } })
           .catch(handleDatabaseError);
@@ -152,7 +150,7 @@ export default function App() {
 
   const handleDatabaseError = (error) => {
       console.error('Firebase database operation failed:', error);
-      setSyncStatus({ text: 'Write failed', color: 'text-red-400' });
+      setSyncStatus({ text: 'Database error', color: 'text-red-400' });
   };
 
   const playSound = (type) => {
@@ -250,7 +248,8 @@ export default function App() {
       player.name = myPlayerName;
       updatedPlayers[myPlayerId] = player;
 
-      pushRoomUpdate({ ...roomData, players: updatedPlayers });
+    const playerRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}/players/${myPlayerId}`);
+    update(playerRef, { name: myPlayerName, stamps }).catch(handleDatabaseError);
 
       if (!wasStamped) {
           playSound('stamp');
@@ -265,18 +264,21 @@ export default function App() {
       if (!newName || !newName.trim()) return;
       const cleanName = newName.trim();
       setMyPlayerName(cleanName);
+      localStorage.setItem('wow_bingo_user_name', cleanName);
 
       if (roomData.players[myPlayerId]) {
-          const updatedPlayers = {
-              ...roomData.players,
-              [myPlayerId]: { ...roomData.players[myPlayerId], name: cleanName }
-          };
-          pushRoomUpdate({ ...roomData, players: updatedPlayers });
+          const playerRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}/players/${myPlayerId}`);
+          update(playerRef, { name: cleanName }).catch(handleDatabaseError);
       }
   };
 
   const updateCardSeed = (newSeed) => {
-      pushRoomUpdate({ ...roomData, seed: newSeed || 'BARRENS2026' });
+      const seed = newSeed || 'BARRENS2026';
+      setRoomData((current) => ({ ...current, seed }));
+      if (dbRef.current) {
+          const roomRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}`);
+          update(roomRef, { seed }).catch(handleDatabaseError);
+      }
   };
 
   const randomizeActiveCard = () => {
