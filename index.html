@@ -3,29 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Send Ibuprofen - Multi-Player Horde Leveling Bingo</title>
+    <title>Send Ibuprofen - WoW Horde Live Sync Bingo</title>
+    
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts for Warcraft Vibe -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         horde: {
-                            red: '#8b0000',
+                            dark: '#0e0b0b',
+                            panel: '#1a1414',
+                            crimson: '#8b0000',
                             brightRed: '#dc2626',
-                            crimson: '#b91c1c',
-                            gold: '#d97706',
-                            goldLight: '#fbbf24',
-                            dark: '#0a090b',
-                            panel: '#151317',
-                            cardBg: '#1e1a20',
-                            cardHover: '#29232c',
-                            border: '#383033'
+                            gold: '#f59e0b',
+                            goldHover: '#d97706',
+                            border: '#3f2d2d'
                         }
                     },
                     fontFamily: {
@@ -39,1043 +40,824 @@
 
     <style>
         body {
-            background-color: #0a090b;
-            background-image: radial-gradient(circle at 50% 15%, #2a0808 0%, #0a090b 75%);
+            background-color: #0c0909;
+            background-image: radial-gradient(#241414 1px, transparent 1px);
+            background-size: 24px 24px;
             color: #e5e7eb;
             font-family: 'Inter', sans-serif;
             min-height: 100vh;
         }
 
-        .font-warcraft {
-            font-family: 'Cinzel', serif;
-        }
-
-        .gold-text {
-            background: linear-gradient(180deg, #fef08a 0%, #d97706 70%, #92400e 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+        .horde-card-active {
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.25);
+            border-color: #dc2626 !important;
         }
 
         .horde-border {
-            border: 2px solid #383033;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 15px rgba(0, 0, 0, 0.6);
-            position: relative;
+            border: 2px solid #3f2d2d;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
         }
 
-        .horde-border::after {
-            content: '';
-            position: absolute;
-            top: -1px; left: -1px; right: -1px; bottom: -1px;
-            border: 1px solid rgba(217, 119, 6, 0.25);
-            pointer-events: none;
-            border-radius: inherit;
+        .stamp-animated {
+            animation: stampPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
 
-        /* Animated stamp marker */
-        .stamp-mark {
-            animation: stampAnimation 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.25) forwards;
+        @keyframes stampPop {
+            0% { transform: scale(1.3) rotate(-5deg); opacity: 0.5; }
+            100% { transform: scale(1) rotate(0deg); opacity: 1; }
         }
 
-        @keyframes stampAnimation {
-            0% { transform: scale(2.5) rotate(-18deg); opacity: 0; }
-            100% { transform: scale(1) rotate(-4deg); opacity: 0.95; }
+        .bingo-glow {
+            animation: bingoGlow 1.5s infinite alternate;
         }
 
-        /* Custom Scrollbars */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #151317;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #383033;
-            border-radius: 4px;
-        }
-        ::-webkit-scrollbar-thumb:hover {
-            background: #b91c1c;
+        @keyframes bingoGlow {
+            from { box-shadow: 0 0 10px #f59e0b, inset 0 0 15px #f59e0b; }
+            to { box-shadow: 0 0 25px #fbbf24, inset 0 0 30px #dc2626; }
         }
 
-        #bingo-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            pointer-events: none;
-            z-index: 999;
-        }
-
-        /* Media Print Adjustments */
+        /* PRINT STYLES */
         @media print {
             body {
                 background: white !important;
                 color: black !important;
             }
-
             .no-print {
                 display: none !important;
             }
-
             .print-only {
                 display: block !important;
             }
-
-            .print-card-page {
-                page-break-after: always;
-                break-after: page;
-                margin: 0 auto;
-                padding: 15px;
-                max-width: 100% !important;
-            }
-
-            .bingo-grid-container {
-                box-shadow: none !important;
+            .bingo-grid {
+                grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+                gap: 2px !important;
                 border: 2px solid #000 !important;
-                background: white !important;
-                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                page-break-inside: avoid;
             }
-
-            .bingo-cell {
-                background: white !important;
+            .bingo-square {
                 border: 1px solid #000 !important;
+                background: white !important;
                 color: black !important;
-                min-height: 105px !important;
+                min-height: 110px !important;
+                font-size: 11px !important;
+                padding: 4px !important;
+                box-shadow: none !important;
             }
-
-            .bingo-cell.completed {
-                background-color: #f3f4f6 !important;
+            .bingo-square.stamped {
+                background: #e5e7eb !important;
             }
-
-            .stamp-mark i {
-                color: #000 !important;
-                opacity: 0.3 !important;
+            .bingo-square .stamp-badge {
+                color: #b91c1c !important;
             }
-
-            .gold-text {
-                background: none !important;
-                -webkit-text-fill-color: black !important;
-                color: black !important;
+            .page-break {
+                page-break-after: always;
             }
         }
     </style>
 </head>
-<body class="p-3 md:p-6 flex flex-col items-center justify-between min-h-screen">
-    <!-- Confetti Particle Overlay -->
-    <canvas id="bingo-canvas"></canvas>
+<body class="flex flex-col min-h-screen text-gray-200">
 
-    <!-- Header Section -->
-    <header class="w-full max-w-6xl text-center mb-6">
-        <div class="inline-flex items-center justify-center gap-3 mb-1">
-            <svg class="w-8 h-8 md:w-11 h-11 text-horde-brightRed filter drop-shadow-[0_0_10px_rgba(220,38,38,0.8)]" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2L15 8L21 9L16.5 14L18 20L12 17L6 20L7.5 14L3 9L9 8L12 2Z" />
-            </svg>
-            <h1 class="text-3xl md:text-5xl font-extrabold font-warcraft tracking-wider gold-text uppercase drop-shadow-md">
-                Send Ibuprofen
-            </h1>
-            <svg class="w-8 h-8 md:w-11 h-11 text-horde-brightRed filter drop-shadow-[0_0_10px_rgba(220,38,38,0.8)]" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2L15 8L21 9L16.5 14L18 20L12 17L6 20L7.5 14L3 9L9 8L12 2Z" />
-            </svg>
-        </div>
-        <h2 class="text-lg md:text-xl font-warcraft text-red-500 font-bold tracking-widest uppercase mb-1">
-            WoW: Forever Horde Leveling Challenge
-        </h2>
-        <p class="text-xs md:text-sm text-gray-400 max-w-2xl mx-auto no-print">
-            Multi-player leveling bingo for launch week! Track up to 10+ players live, sync card layouts using shared seeds, or print custom cards for your guild.
-        </p>
-    </header>
-
-    <!-- Main Content Container -->
-    <main class="w-full max-w-6xl flex flex-col items-center gap-6">
-
-        <!-- Global Action Bar -->
-        <div class="no-print w-full flex flex-wrap justify-between items-center gap-3 bg-horde-panel p-3 md:p-4 rounded-xl border border-horde-border shadow-xl">
-            <!-- Left Controls: Player & Game Management -->
-            <div class="flex flex-wrap items-center gap-2">
-                <button onclick="addNewPlayer()" class="px-3 py-2 bg-horde-crimson hover:bg-horde-brightRed text-white rounded-lg text-xs md:text-sm font-bold transition flex items-center gap-2 border border-red-500/50">
-                    <i class="fa-solid fa-user-plus"></i> Add Player
-                </button>
-                <button onclick="openSeedModal()" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-amber-400 rounded-lg text-xs md:text-sm font-semibold transition border border-amber-600/40 flex items-center gap-2">
-                    <i class="fa-solid fa-key"></i> Shared Seed
-                </button>
-                <button onclick="openPoolModal()" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg text-xs md:text-sm font-semibold transition border border-gray-600/40 flex items-center gap-2">
-                    <i class="fa-solid fa-list-check text-amber-500"></i> Edit Challenge Pool
-                </button>
-                <button onclick="resetAllProgress()" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-red-400 rounded-lg text-xs md:text-sm font-semibold transition border border-red-900/40 flex items-center gap-2">
-                    <i class="fa-solid fa-rotate-left"></i> Reset All Marks
-                </button>
+    <!-- TOP NAVBAR -->
+    <header class="no-print bg-horde-panel border-b border-horde-border sticky top-0 z-40 shadow-xl">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+            
+            <!-- Brand & Room ID -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-horde-crimson flex items-center justify-center border border-red-500 shadow-md">
+                    <i class="fa-solid fa-horde text-amber-400 text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl md:text-2xl font-black font-warcraft tracking-wider text-amber-500 flex items-center gap-2">
+                        SEND IBUPROFEN
+                        <span class="text-xs font-sans px-2 py-0.5 bg-red-950 text-red-300 rounded border border-red-800 uppercase tracking-widest font-semibold">WoW Horde Live</span>
+                    </h1>
+                    <div class="flex items-center gap-2 text-xs text-gray-400">
+                        <span>Room Code: <strong id="room-code-display" class="text-amber-300 font-mono">GLOBAL</strong></span>
+                        <span id="sync-status" class="flex items-center gap-1 text-emerald-400"><i class="fa-solid fa-signal text-[10px]"></i> Local Sync</span>
+                    </div>
+                </div>
             </div>
 
-            <!-- Right Controls: View Toggle, Audio & Print -->
+            <!-- Right Controls: Room Actions & Sound -->
             <div class="flex flex-wrap items-center gap-2">
-                <button onclick="toggleSound()" id="sound-btn" class="p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs md:text-sm transition border border-gray-600/40" title="Toggle Sound Effects">
+                <button onclick="openModal('room-modal')" class="px-3 py-1.5 bg-horde-crimson hover:bg-horde-brightRed text-white rounded-lg text-xs font-bold border border-red-500/50 flex items-center gap-1.5">
+                    <i class="fa-solid fa-door-open"></i> Rooms & Sync
+                </button>
+                <button onclick="openModal('pool-modal')" class="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg text-xs font-semibold border border-gray-600/40 flex items-center gap-1.5">
+                    <i class="fa-solid fa-list-check text-amber-500"></i> Edit Pool
+                </button>
+                <button onclick="toggleSound()" id="sound-btn" class="p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs" title="Toggle Audio">
                     <i id="sound-icon" class="fa-solid fa-volume-high text-amber-500"></i>
                 </button>
-                <button onclick="openPrintModal()" class="px-3.5 py-2 bg-amber-700 hover:bg-amber-600 text-white rounded-lg text-xs md:text-sm font-bold transition shadow-md flex items-center gap-2 border border-amber-500/50">
-                    <i class="fa-solid fa-print"></i> Print Cards
+                <button onclick="openPrintModal()" class="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-white rounded-lg text-xs font-bold border border-amber-500/50 flex items-center gap-1.5">
+                    <i class="fa-solid fa-print"></i> Print
                 </button>
             </div>
         </div>
+    </header>
 
-        <!-- Player Navigation Tabs & View Switcher -->
-        <div class="no-print w-full flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
-            <!-- Scrollable Player Tabs -->
-            <div id="player-tabs" class="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto scrollbar-thin">
-                <!-- Dynamically populated player pills -->
+    <!-- MAIN APP WRAPPER -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+        <!-- LEFT/CENTER CONTENT: BINGO BOARD -->
+        <section class="lg:col-span-3 flex flex-col gap-4">
+
+            <!-- PLAYER TAB SELECTOR BAR -->
+            <div class="no-print bg-horde-panel p-2 rounded-xl border border-horde-border flex items-center justify-between gap-2 overflow-x-auto">
+                <div id="player-tabs" class="flex items-center gap-2 overflow-x-auto py-1">
+                    <!-- Dynamic player tabs loaded here -->
+                </div>
+                <button onclick="addNewPlayerPrompt()" class="px-3 py-1.5 bg-green-900/80 hover:bg-green-800 text-green-200 rounded-lg text-xs font-bold whitespace-nowrap border border-green-700/50 flex items-center gap-1">
+                    <i class="fa-solid fa-user-plus"></i> Add Player
+                </button>
             </div>
 
-            <!-- Dashboard View Switcher -->
-            <div class="flex items-center bg-horde-panel p-1 rounded-xl border border-horde-border shrink-0 self-end md:self-auto">
-                <button id="view-btn-card" onclick="switchView('card')" class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition bg-horde-crimson text-white">
-                    <i class="fa-solid fa-table-cells mr-1"></i> Player Card
-                </button>
-                <button id="view-btn-leaderboard" onclick="switchView('leaderboard')" class="px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition text-gray-400 hover:text-white">
-                    <i class="fa-solid fa-trophy mr-1"></i> Leaderboard
-                </button>
-            </div>
-        </div>
-
-        <!-- SINGLE PLAYER CARD VIEW -->
-        <div id="view-card-container" class="w-full flex flex-col items-center">
-            
-            <!-- Current Player Information Header -->
-            <div class="no-print w-full flex flex-wrap justify-between items-center gap-2 bg-horde-panel/80 px-4 py-3 rounded-xl border border-horde-border mb-4">
+            <!-- ACTIVE CARD HEADER & SEED STATS -->
+            <div class="no-print bg-horde-panel p-4 rounded-xl border border-horde-border flex flex-wrap items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                    <div id="player-avatar" class="w-9 h-9 rounded-full bg-horde-crimson text-amber-300 font-warcraft font-bold flex items-center justify-center text-lg border border-amber-500/50">
-                        P1
+                    <div class="text-amber-400 font-warcraft text-2xl font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-shield-halved text-red-500"></i>
+                        <span id="active-player-title">Player Card</span>
                     </div>
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <input id="player-name-input" type="text" onchange="renameCurrentPlayer(this.value)" class="bg-transparent text-lg md:text-xl font-bold font-warcraft text-amber-400 focus:bg-horde-dark px-2 py-0.5 rounded border border-transparent focus:border-horde-border outline-none transition" value="Player 1" />
-                            <i class="fa-solid fa-pen text-xs text-gray-500"></i>
-                        </div>
-                        <p id="player-stats-subtitle" class="text-xs text-gray-400 px-2">
-                            Completed: 1/25 | Bingos: 0
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Per-Player Quick Actions -->
-                <div class="flex items-center gap-2">
-                    <button onclick="randomizeCurrentPlayerCard()" class="px-2.5 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs font-semibold transition border border-gray-600/40 flex items-center gap-1.5" title="Reshuffle this player's board">
-                        <i class="fa-solid fa-shuffle text-amber-500"></i> Reshuffle
-                    </button>
-                    <button onclick="removeCurrentPlayer()" class="px-2.5 py-1.5 bg-red-950/40 hover:bg-red-900/60 text-red-400 rounded-lg text-xs font-semibold transition border border-red-800/40 flex items-center gap-1.5" title="Remove Player">
-                        <i class="fa-solid fa-trash"></i> Delete
-                    </button>
-                </div>
-            </div>
-
-            <!-- The Bingo Board Container -->
-            <div class="bingo-grid-container w-full max-w-4xl bg-horde-panel p-2 md:p-5 rounded-2xl horde-border shadow-2xl">
-                <!-- Grid Column Headers -->
-                <div class="grid grid-cols-5 gap-1.5 md:gap-3 mb-2 text-center">
-                    <div class="font-warcraft font-black text-xl md:text-3xl text-horde-brightRed drop-shadow">B</div>
-                    <div class="font-warcraft font-black text-xl md:text-3xl text-horde-brightRed drop-shadow">I</div>
-                    <div class="font-warcraft font-black text-xl md:text-3xl text-horde-brightRed drop-shadow">N</div>
-                    <div class="font-warcraft font-black text-xl md:text-3xl text-horde-brightRed drop-shadow">G</div>
-                    <div class="font-warcraft font-black text-xl md:text-3xl text-horde-brightRed drop-shadow">O</div>
-                </div>
-
-                <!-- 5x5 Grid Board -->
-                <div id="active-bingo-board" class="grid grid-cols-5 gap-1.5 md:gap-3">
-                    <!-- Populated via JavaScript -->
-                </div>
-            </div>
-        </div>
-
-        <!-- LEADERBOARD DASHBOARD VIEW (Hidden by default) -->
-        <div id="view-leaderboard-container" class="hidden w-full max-w-5xl flex flex-col gap-6">
-            <div class="bg-horde-panel p-4 md:p-6 rounded-2xl horde-border">
-                <div class="flex items-center justify-between mb-4 pb-3 border-b border-horde-border">
-                    <h3 class="text-xl font-bold font-warcraft text-amber-400 flex items-center gap-2">
-                        <i class="fa-solid fa-trophy text-horde-gold"></i> Live Player Leaderboards
-                    </h3>
-                    <span id="total-players-badge" class="text-xs bg-gray-800 text-gray-300 px-3 py-1 rounded-full border border-gray-700">
-                        10 Players Active
+                    <span id="bingo-badge" class="hidden px-3 py-0.5 bg-amber-500 text-black font-black text-xs rounded-full uppercase tracking-wider bingo-glow">
+                        BINGO!
                     </span>
                 </div>
 
-                <!-- Leaderboard Table -->
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-gray-300">
-                        <thead class="bg-horde-dark text-xs uppercase text-amber-500/90 font-warcraft border-b border-horde-border">
-                            <tr>
-                                <th class="py-3 px-4">Rank</th>
-                                <th class="py-3 px-4">Player Name</th>
-                                <th class="py-3 px-4 text-center">Stamped Squares</th>
-                                <th class="py-3 px-4 text-center">Bingos Won</th>
-                                <th class="py-3 px-4 text-center">Progress Bar</th>
-                                <th class="py-3 px-4 text-right">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leaderboard-tbody" class="divide-y divide-horde-border/50">
-                            <!-- Populated via JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- PRINT CONTAINER (Used specifically during window.print()) -->
-        <div id="print-container" class="hidden print-only w-full">
-            <!-- Dynamically populated cards for high contrast paper print -->
-        </div>
-
-    </main>
-
-    <!-- MODAL 1: Shared Seed Modal -->
-    <div id="seed-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-horde-panel border border-horde-border rounded-2xl max-w-md w-full p-6 shadow-2xl horde-border">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold font-warcraft text-amber-400">
-                    <i class="fa-solid fa-key mr-1"></i> Shared Card Seed
-                </h3>
-                <button onclick="closeModal('seed-modal')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <p class="text-xs text-gray-300 mb-4 leading-relaxed">
-                Entering a shared seed will generate identical randomized card challenge layouts across all players who use the same seed text!
-            </p>
-            <div class="mb-4">
-                <label class="block text-xs uppercase font-bold text-gray-400 mb-1">Seed String</label>
-                <div class="flex gap-2">
-                    <input id="seed-input-field" type="text" placeholder="e.g. BARRENS2026" class="bg-horde-dark border border-horde-border text-amber-300 px-3 py-2 rounded-lg text-sm w-full font-mono outline-none focus:border-amber-500" />
-                    <button onclick="generateRandomSeedInput()" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold rounded-lg shrink-0">
-                        Random
+                <div class="flex items-center gap-4 text-xs">
+                    <div>
+                        <span class="text-gray-400">Card Seed:</span>
+                        <input id="card-seed-input" type="text" onchange="updateCardSeed(this.value)" class="ml-1 bg-horde-dark border border-horde-border text-amber-300 font-mono px-2 py-1 rounded text-xs w-28 text-center" />
+                    </div>
+                    <div>
+                        <span class="text-gray-400">Stamped:</span>
+                        <span id="stamped-count" class="font-bold text-amber-400 text-sm ml-1">0/25</span>
+                    </div>
+                    <button onclick="randomizeActiveCard()" class="px-2.5 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded border border-gray-600 text-xs flex items-center gap-1">
+                        <i class="fa-solid fa-dice"></i> Shuffle
                     </button>
                 </div>
             </div>
+
+            <!-- BINGO GRID CONTAINER -->
+            <div id="bingo-grid-container" class="bg-horde-panel p-3 md:p-5 rounded-2xl border-2 border-horde-border shadow-2xl relative">
+                
+                <!-- BINGO HEADER COLUMNS -->
+                <div class="grid grid-cols-5 gap-1.5 md:gap-3 mb-2 md:mb-3 text-center font-warcraft font-extrabold text-lg md:text-2xl text-amber-500 tracking-widest">
+                    <div class="py-1 bg-horde-dark rounded border border-red-950/40">B</div>
+                    <div class="py-1 bg-horde-dark rounded border border-red-950/40">I</div>
+                    <div class="py-1 bg-horde-dark rounded border border-red-950/40">N</div>
+                    <div class="py-1 bg-horde-dark rounded border border-red-950/40">G</div>
+                    <div class="py-1 bg-horde-dark rounded border border-red-950/40">O</div>
+                </div>
+
+                <!-- 5x5 GRID SQUARES -->
+                <div id="bingo-grid" class="bingo-grid grid grid-cols-5 gap-1.5 md:gap-3">
+                    <!-- Dynamic Squares Populated by JS -->
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT CONTENT: LEADERBOARD & ROOM INFO -->
+        <aside class="no-print flex flex-col gap-4">
+            
+            <!-- LIVE LEADERBOARD -->
+            <div class="bg-horde-panel p-4 rounded-xl border border-horde-border flex flex-col h-full shadow-lg">
+                <div class="flex items-center justify-between border-b border-horde-border pb-3 mb-3">
+                    <h2 class="text-sm font-bold font-warcraft uppercase tracking-wider text-amber-400 flex items-center gap-2">
+                        <i class="fa-solid fa-trophy text-amber-500"></i> Live Standings
+                    </h2>
+                    <span id="player-count-badge" class="text-xs bg-gray-800 text-gray-300 px-2 py-0.5 rounded-full font-mono">0 Players</span>
+                </div>
+
+                <div id="leaderboard-list" class="flex flex-col gap-2.5 overflow-y-auto max-h-[500px] pr-1">
+                    <!-- Dynamic Leaderboard Items -->
+                </div>
+
+                <div class="mt-auto pt-4 border-t border-horde-border flex items-center justify-between text-xs text-gray-400">
+                    <span>Room: <strong id="sidebar-room-name" class="text-gray-200">Global</strong></span>
+                    <button onclick="shareRoomLink()" class="text-amber-400 hover:underline flex items-center gap-1">
+                        <i class="fa-solid fa-share-nodes"></i> Share Link
+                    </button>
+                </div>
+            </div>
+
+            <!-- INSTRUCTIONS & HELP BOX -->
+            <div class="bg-horde-panel p-4 rounded-xl border border-horde-border text-xs text-gray-400 space-y-2">
+                <h3 class="font-bold text-gray-200 font-warcraft text-sm flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-info text-amber-500"></i> How Realtime Sync Works
+                </h3>
+                <p>1. Connect your <strong>Firebase Realtime DB</strong> in Room settings for instant cross-device updates.</p>
+                <p>2. Share your room code or URL link with guildmates!</p>
+                <p>3. Stamping squares updates live on everyone's dashboard.</p>
+            </div>
+
+        </aside>
+
+    </main>
+
+    <!-- MODAL: ROOM & FIREBASE SETTINGS -->
+    <div id="room-modal" class="hidden no-print fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-horde-panel border border-horde-border rounded-2xl max-w-lg w-full p-6 shadow-2xl horde-border">
+            <div class="flex justify-between items-center mb-4 border-b border-horde-border pb-3">
+                <h3 class="text-lg font-bold font-warcraft text-amber-400 flex items-center gap-2">
+                    <i class="fa-solid fa-network-wired"></i> Room & Firebase Live Sync
+                </h3>
+                <button onclick="closeModal('room-modal')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <!-- ROOM CREATION & JOIN -->
+            <div class="space-y-4 mb-6">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-gray-400 mb-1">Room Code / ID</label>
+                    <div class="flex gap-2">
+                        <input id="room-input" type="text" placeholder="e.g. BARRENS2026" class="bg-horde-dark border border-horde-border text-amber-300 font-mono px-3 py-2 rounded-lg text-sm w-full font-bold outline-none focus:border-amber-500 uppercase" />
+                        <button onclick="switchRoom(document.getElementById('room-input').value)" class="px-4 py-2 bg-horde-crimson hover:bg-horde-brightRed text-white text-xs font-bold rounded-lg whitespace-nowrap">
+                            Join / Create
+                        </button>
+                    </div>
+                </div>
+
+                <div class="border-t border-horde-border pt-4">
+                    <h4 class="text-xs font-bold uppercase text-amber-400 mb-2">Firebase DB Configuration (Optional Live Sync)</h4>
+                    <p class="text-xs text-gray-400 mb-3">Paste your Firebase Realtime Database config JSON below to enable live multi-device syncing across players.</p>
+                    <textarea id="firebase-config-input" rows="4" placeholder='{ "apiKey": "...", "authDomain": "...", "databaseURL": "...", "projectId": "..." }' class="bg-horde-dark border border-horde-border font-mono text-xs text-gray-300 p-2.5 rounded-lg w-full outline-none focus:border-amber-500"></textarea>
+                </div>
+            </div>
+
             <div class="flex justify-end gap-2">
-                <button onclick="closeModal('seed-modal')" class="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs font-bold">Cancel</button>
-                <button onclick="applySharedSeed()" class="px-4 py-2 bg-horde-crimson hover:bg-horde-brightRed text-white rounded-lg text-xs font-bold">Apply Seed to All</button>
+                <button onclick="saveFirebaseConfig()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-black text-xs font-bold rounded-lg">
+                    Save Config & Sync
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 2: Challenge Pool Editor Modal -->
-    <div id="pool-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-horde-panel border border-horde-border rounded-2xl max-w-2xl w-full p-6 shadow-2xl horde-border flex flex-col max-h-[85vh]">
-            <div class="flex justify-between items-center mb-3">
-                <h3 class="text-lg font-bold font-warcraft text-amber-400">
-                    <i class="fa-solid fa-list-check mr-1"></i> Edit Challenge Pool (25+ Items)
+    <!-- MODAL: CHALLENGE POOL EDITOR -->
+    <div id="pool-modal" class="hidden no-print fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-horde-panel border border-horde-border rounded-2xl max-w-2xl w-full p-6 shadow-2xl horde-border flex flex-col max-h-[90vh]">
+            <div class="flex justify-between items-center mb-4 border-b border-horde-border pb-3">
+                <h3 class="text-lg font-bold font-warcraft text-amber-400 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check"></i> Customize Master Challenge Pool
                 </h3>
                 <button onclick="closeModal('pool-modal')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <p class="text-xs text-gray-300 mb-3">
-                Edit the master list of challenges below (one challenge per line). Cards require at least 24 challenges to fill a 5x5 grid.
-            </p>
-            <textarea id="pool-textarea" class="w-full flex-grow bg-horde-dark border border-horde-border text-gray-200 p-3 rounded-lg text-xs font-mono outline-none focus:border-amber-500 resize-none min-h-[250px] leading-relaxed"></textarea>
-            <div class="flex justify-between items-center mt-4">
-                <button onclick="restoreDefaultPool()" class="px-3 py-2 bg-gray-800 hover:bg-gray-700 text-amber-400 rounded-lg text-xs font-semibold">Restore Defaults</button>
-                <div class="flex gap-2">
-                    <button onclick="closeModal('pool-modal')" class="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs font-bold">Cancel</button>
-                    <button onclick="saveChallengePool()" class="px-4 py-2 bg-horde-crimson hover:bg-horde-brightRed text-white rounded-lg text-xs font-bold">Save & Re-generate Cards</button>
-                </div>
+
+            <div class="flex-grow overflow-y-auto mb-4 pr-1">
+                <p class="text-xs text-gray-400 mb-3">Add one challenge per line. At least 24 unique challenges are required to shuffle full 5x5 boards.</p>
+                <textarea id="pool-textarea" rows="12" class="bg-horde-dark border border-horde-border font-sans text-xs text-gray-200 p-3 rounded-xl w-full outline-none focus:border-amber-500 leading-relaxed"></textarea>
+            </div>
+
+            <div class="flex justify-between items-center pt-3 border-t border-horde-border">
+                <button onclick="resetDefaultPool()" class="px-3 py-1.5 bg-gray-800 text-gray-400 hover:text-white text-xs rounded-lg">Reset Default</button>
+                <button onclick="saveCustomPool()" class="px-4 py-2 bg-horde-crimson hover:bg-horde-brightRed text-white text-xs font-bold rounded-lg">Save Pool Changes</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 3: Print Options Modal -->
-    <div id="print-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <!-- MODAL: PRINT CARDS SETUP -->
+    <div id="print-modal" class="hidden no-print fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="bg-horde-panel border border-horde-border rounded-2xl max-w-md w-full p-6 shadow-2xl horde-border">
-            <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-bold font-warcraft text-amber-400">
-                    <i class="fa-solid fa-print mr-1"></i> Print Settings
+            <div class="flex justify-between items-center mb-4 border-b border-horde-border pb-3">
+                <h3 class="text-lg font-bold font-warcraft text-amber-400 flex items-center gap-2">
+                    <i class="fa-solid fa-print"></i> Print Bingo Cards
                 </h3>
                 <button onclick="closeModal('print-modal')" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <div class="space-y-3 mb-6">
-                <label class="flex items-center gap-3 p-3 bg-horde-dark rounded-xl border border-horde-border cursor-pointer hover:border-amber-500/50">
-                    <input type="radio" name="print-scope" value="current" checked class="accent-amber-500" />
-                    <div>
-                        <div class="text-sm font-bold text-gray-200">Print Active Player Only</div>
-                        <div class="text-xs text-gray-400">Prints 1 clean high-contrast page for selected player.</div>
-                    </div>
-                </label>
-                <label class="flex items-center gap-3 p-3 bg-horde-dark rounded-xl border border-horde-border cursor-pointer hover:border-amber-500/50">
-                    <input type="radio" name="print-scope" value="all" class="accent-amber-500" />
-                    <div>
-                        <div class="text-sm font-bold text-gray-200">Print All Players (Batch)</div>
-                        <div class="text-xs text-gray-400">Generates individual printable cards for every active player.</div>
-                    </div>
-                </label>
+
+            <div class="space-y-3 mb-6 text-xs text-gray-300">
+                <p>Choose printing options below. Page formatting strips dark backgrounds for high-contrast ink printing.</p>
+                <div class="space-y-2 pt-2">
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="print-option" value="active" checked class="accent-amber-500" />
+                        <span>Print Current Active Player Card (<strong id="print-active-name" class="text-amber-400">Player</strong>)</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="radio" name="print-option" value="all" class="accent-amber-500" />
+                        <span>Print All Players' Cards (<span id="print-all-count">0</span> Cards)</span>
+                    </label>
+                </div>
             </div>
+
             <div class="flex justify-end gap-2">
-                <button onclick="closeModal('print-modal')" class="px-4 py-2 bg-gray-800 text-gray-300 rounded-lg text-xs font-bold">Cancel</button>
-                <button onclick="executePrint()" class="px-4 py-2 bg-horde-crimson hover:bg-horde-brightRed text-white rounded-lg text-xs font-bold">Proceed to Print</button>
+                <button onclick="triggerPrintExecution()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-black text-xs font-bold rounded-lg flex items-center gap-1.5">
+                    <i class="fa-solid fa-print"></i> Open Print Dialog
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="mt-8 text-center text-xs text-gray-500 no-print">
-        <p>Send Ibuprofen Fan Project — Multi-Player WoW Leveling Bingo</p>
+    <!-- FOOTER -->
+    <footer class="no-print mt-auto bg-horde-panel border-t border-horde-border py-4 text-center text-xs text-gray-500">
+        <p>Send Ibuprofen - WoW Horde Leveling Bingo &bull; Custom Release Week Challenge Card</p>
     </footer>
 
-    <script>
-        // Master Challenge Pool (Default 28 items)
-        const DEFAULT_POOL = [
-            "Take a selfie standing next to King Anduin in Stormwind Keep",
-            "Ride the Deeprun Tram and survive for at least 5 seconds",
-            "Get mind-controlled by an Alliance Priest & /dance with them",
-            "Visit the bank in Darnassus as Horde and survive",
-            "Attune to (or attempt to click) an Alliance Flight Master",
-            "Exchange 3 emotes with an Alliance player without fighting",
-            "Get slain by an Alliance guard/player 15+ levels lower than you",
-            "Defend Crossroads or Tarren Mill from an Alliance attack",
-            "Die to fall damage from Thunder Bluff cliffs",
-            "Get killed by Gazz'ril or an Elite in The Barrens",
-            "Survive a trip on the TB elevator without taking damage",
-            "Accidentally pull 5+ mobs and successfully run away",
+    <!-- FIREBASE REALTIME DB IMPORTS (MODULE) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        // MASTER DEFAULT HORDE CHALLENGE POOL
+        const DEFAULT_CHALLENGES = [
+            "Stand next to King Anduin Wrynn in Stormwind Keep",
+            "Ride the Deeprun Tram from Stormwind to Ironforge",
+            "Get mind-controlled by an Alliance Priest & emote /dance",
+            "Take a selfie/screenshot at the top of Darnassus Bank",
+            "Attune to or click an Alliance Flight Master",
+            "Exchange 3 friendly emotes with an Alliance player",
+            "Defend Crossroads or Tarren Mill from an Alliance gank",
+            "Pickpocket or loot an Alliance player corpse",
+            "Get slain by an Alliance player 10+ levels lower",
+            "Die to fall damage from Thousand Needles or TB Elevators",
+            "Survive TB elevator ride without taking fall damage",
+            "Get killed by Gazz'ril or The Oozing Slime in Barrens",
             "Die inside a crowded cave system",
-            "Spot a classic Chuck Norris joke in Barrens Chat (/2)",
-            "Equip hideous green gear purely because it has higher stats",
+            "Pull 5+ mobs by accident, run away, and survive",
+            "Witness or post a Chuck Norris joke in Barrens Chat",
+            "Equip hideous green gear solely for the stat upgrade",
             "Receive 3 unsolicited guild invites in a single zone",
-            "Lose a /roll 100 for dungeon gear by less than 5 points",
-            "Save a dying player in the open world with a buff or heal",
-            "Reach level 20 & get your Mount or Travel Form",
-            "Complete a full clear of RFC or Wailing Caverns",
-            "Pickpocket or loot an Alliance player's corpse",
-            "Survive a gank attempt by an enemy 5+ levels higher",
-            "Fish up a rare or useful item from a pool/wreckage",
-            "Max out a main Profession rank for your current level cap",
-            "Complete 50 total quests in your log",
-            "Die to an Alliance Guard in an enemy territory",
-            "Successfully run through a high-level contested zone unharmed",
-            "Win a Need roll on a rare or green upgrade"
+            "Lose a /roll 100 for a dungeon item by less than 5 points",
+            "Save a random player from dying in the open world",
+            "Reach Level 20 and learn travel form / mount",
+            "Complete a full dungeon run with 0 player wipes",
+            "Get ganked while attempting to turn in a quest",
+            "Kill an enemy player while at under 10% health",
+            "Find and open a Locked Iron Chest in the open world",
+            "Fish up a junk item or rare fish in enemy territory",
+            "Successfully complete 50 total quests in your log",
+            "Kite an elite monster into a Horde town or guard",
+            "Buy gear or items from an Alliance Neutral Auction House"
         ];
 
-        const FREE_SPACE_TEXT = "FREE SPACE:\nReach Level 20";
+        // GLOBAL APP STATE
+        let currentRoomId = 'GLOBAL';
+        let audioEnabled = true;
+        let db = null;
+        let masterPool = [...DEFAULT_CHALLENGES];
+        
+        let roomData = {
+            seed: 'BARRENS2026',
+            players: {
+                'p_default': {
+                    id: 'p_default',
+                    name: 'Mankrik',
+                    stamps: { 12: true } // Center free space stamped
+                }
+            }
+        };
 
-        // Application State
-        let challengePool = [...DEFAULT_POOL];
-        let players = [];
-        let activePlayerIndex = 0;
-        let currentView = 'card'; // 'card' or 'leaderboard'
-        let sharedSeed = '';
-        let soundEnabled = true;
+        let activeDisplayedPlayerId = 'p_default';
 
-        // Web Audio API Synthesizer
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        function playStampSound() {
-            if (!soundEnabled) return;
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(160, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(45, audioCtx.currentTime + 0.12);
-
-            gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.12);
-
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-
-            osc.start();
-            osc.stop(audioCtx.currentTime + 0.12);
-        }
-
-        function playFanfareSound() {
-            if (!soundEnabled) return;
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-
-            const notes = [261.63, 329.63, 392.00, 523.25]; // C4, E4, G4, C5
-            notes.forEach((freq, index) => {
+        function playSound(type) {
+            if (!audioEnabled || !audioCtx) return;
+            try {
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime + index * 0.09);
-
-                gain.gain.setValueAtTime(0.25, audioCtx.currentTime + index * 0.09);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + index * 0.09 + 0.28);
-
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
 
-                osc.start(audioCtx.currentTime + index * 0.09);
-                osc.stop(audioCtx.currentTime + index * 0.09 + 0.28);
-            });
+                const now = audioCtx.currentTime;
+
+                if (type === 'stamp') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.exponentialRampToValueAtTime(320, now + 0.08);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'bingo') {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.setValueAtTime(554.37, now + 0.12);
+                    osc.frequency.setValueAtTime(659.25, now + 0.24);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.linearRampToValueAtTime(0, now + 0.5);
+                    osc.start(now);
+                    osc.stop(now + 0.5);
+                }
+            } catch (e) { console.warn("Audio error:", e); }
         }
 
-        function toggleSound() {
-            soundEnabled = !soundEnabled;
-            const icon = document.getElementById('sound-icon');
-            icon.className = soundEnabled ? 'fa-solid fa-volume-high text-amber-500' : 'fa-solid fa-volume-xmark text-gray-500';
-        }
-
-        // Pseudo-random Seed Generator
         function seededRandom(seedStr) {
             let hash = 0;
             for (let i = 0; i < seedStr.length; i++) {
-                hash = Math.imul(31, hash) + seedStr.charCodeAt(i) | 0;
+                hash = seedStr.charCodeAt(i) + ((hash << 5) - hash);
             }
             return function() {
-                hash = Math.imul(48271, hash) % 2147483647;
-                return (hash & 2147483647) / 2147483647;
+                const x = Math.sin(hash++) * 10000;
+                return x - Math.floor(x);
             };
         }
 
-        // Generate dynamic single player board state
-        function generateBoardForPlayer(seed = null) {
-            let pool = [...challengePool];
-            let randFn = seed ? seededRandom(seed) : Math.random;
+        function generateCardItems(seed, playerUniqueKey) {
+            const rng = seededRandom(seed + '_' + playerUniqueKey);
+            let poolCopy = [...masterPool];
+            let shuffled = [];
 
-            // Fisher-Yates Shuffle with custom random function
-            for (let i = pool.length - 1; i > 0; i--) {
-                const j = Math.floor(randFn() * (i + 1));
-                [pool[i], pool[j]] = [pool[j], pool[i]];
+            while (poolCopy.length > 0) {
+                const index = Math.floor(rng() * poolCopy.length);
+                shuffled.push(poolCopy.splice(index, 1)[0]);
             }
 
-            let board = [];
-            let challengeIdx = 0;
+            let grid25 = [];
+            let itemIdx = 0;
 
             for (let i = 0; i < 25; i++) {
                 if (i === 12) {
-                    board.push({
-                        text: FREE_SPACE_TEXT,
-                        completed: true,
-                        isFreeSpace: true
-                    });
+                    grid25.push("FREE SPACE: Reach Level 20");
                 } else {
-                    board.push({
-                        text: pool[challengeIdx] || `Challenge #${i + 1}`,
-                        completed: false,
-                        isFreeSpace: false
-                    });
-                    challengeIdx++;
+                    grid25.push(shuffled[itemIdx % shuffled.length] || "Complete Quest");
+                    itemIdx++;
                 }
             }
-            return board;
+            return grid25;
         }
 
-        function initApp() {
-            const savedState = localStorage.getItem('send_ibuprofen_bingo_state');
-            if (savedState) {
-                try {
-                    const parsed = JSON.parse(savedState);
-                    players = parsed.players || [];
-                    activePlayerIndex = parsed.activePlayerIndex || 0;
-                    challengePool = parsed.challengePool || [...DEFAULT_POOL];
-                    sharedSeed = parsed.sharedSeed || '';
-                } catch(e) {
-                    createDefaultPlayers();
+        function checkBingoLines(stamps) {
+            const WIN_PATTERNS = [
+                // Rows
+                [0,1,2,3,4], [5,6,7,8,9], [10,11,12,13,14], [15,16,17,18,19], [20,21,22,23,24],
+                // Columns
+                [0,5,10,15,20], [1,6,11,16,21], [2,7,12,17,22], [3,8,13,18,23], [4,9,14,19,24],
+                // Diagonals
+                [0,6,12,18,24], [4,8,12,16,20]
+            ];
+
+            let winCount = 0;
+            let winningIndices = new Set();
+
+            WIN_PATTERNS.forEach(pattern => {
+                const hasBingo = pattern.every(idx => stamps[idx]);
+                if (hasBingo) {
+                    winCount++;
+                    pattern.forEach(i => winningIndices.add(i));
                 }
-            } else {
-                createDefaultPlayers();
-            }
+            });
 
-            if (players.length === 0) createDefaultPlayers();
-            if (activePlayerIndex >= players.length) activePlayerIndex = 0;
-
-            renderAll();
-        }
-
-        function createDefaultPlayers() {
-            const defaultNames = ["Grom", "Thrall", "Vol'jin", "Sylvanas"];
-            players = defaultNames.map((name, i) => ({
-                id: 'player_' + Date.now() + '_' + i,
-                name: name,
-                board: generateBoardForPlayer()
-            }));
-            activePlayerIndex = 0;
-            saveAppState();
-        }
-
-        function saveAppState() {
-            const state = {
-                players,
-                activePlayerIndex,
-                challengePool,
-                sharedSeed
-            };
-            localStorage.setItem('send_ibuprofen_bingo_state', JSON.stringify(state));
+            return { winCount, winningIndices };
         }
 
         function renderAll() {
             renderPlayerTabs();
-            renderActivePlayerCard();
+            renderActiveCard();
             renderLeaderboard();
-            updatePlayerBadge();
+            updateHeaderInfo();
+        }
+
+        function updateHeaderInfo() {
+            document.getElementById('room-code-display').innerText = currentRoomId;
+            document.getElementById('sidebar-room-name').innerText = currentRoomId;
+            
+            const playersArr = Object.values(roomData.players || {});
+            document.getElementById('player-count-badge').innerText = `${playersArr.length} Player${playersArr.length === 1 ? '' : 's'}`;
+            
+            document.getElementById('card-seed-input').value = roomData.seed || 'BARRENS2026';
         }
 
         function renderPlayerTabs() {
-            const tabsContainer = document.getElementById('player-tabs');
-            tabsContainer.innerHTML = '';
+            const container = document.getElementById('player-tabs');
+            container.innerHTML = '';
 
-            players.forEach((player, idx) => {
-                const isActive = idx === activePlayerIndex;
-                const stats = getPlayerStats(player);
+            Object.values(roomData.players || {}).forEach(player => {
+                const isActive = player.id === activeDisplayedPlayerId;
+                const stamps = player.stamps || {};
+                const { winCount } = checkBingoLines(stamps);
 
                 const btn = document.createElement('button');
-                btn.className = `px-3.5 py-1.5 rounded-xl font-bold text-xs md:text-sm transition flex items-center gap-2 border whitespace-nowrap ${
-                    isActive
-                        ? 'bg-horde-crimson text-white border-red-500 shadow-md'
-                        : 'bg-horde-panel hover:bg-horde-cardBg text-gray-300 border-horde-border'
+                btn.className = `px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 border whitespace-nowrap ${
+                    isActive 
+                    ? 'bg-horde-crimson text-white border-red-500 shadow-md' 
+                    : 'bg-horde-dark text-gray-400 border-horde-border hover:bg-gray-800'
                 }`;
 
-                btn.innerHTML = `
-                    <span>${escapeHtml(player.name)}</span>
-                    <span class="text-[10px] px-1.5 py-0.2 rounded-full ${isActive ? 'bg-amber-400 text-black font-extrabold' : 'bg-gray-800 text-gray-400'}">
-                        ${stats.completed}/25
-                    </span>
-                    ${stats.bingos > 0 ? `<i class="fa-solid fa-crown text-amber-400 text-xs"></i>` : ''}
-                `;
-
                 btn.onclick = () => {
-                    activePlayerIndex = idx;
-                    saveAppState();
+                    activeDisplayedPlayerId = player.id;
                     renderAll();
                 };
 
-                tabsContainer.appendChild(btn);
+                btn.innerHTML = `
+                    <i class="fa-solid fa-user text-[10px]"></i>
+                    <span>${escapeHtml(player.name)}</span>
+                    ${winCount > 0 ? `<span class="bg-amber-400 text-black px-1.5 py-0.2 rounded-full text-[10px] font-black">${winCount} BINGO</span>` : ''}
+                `;
+                container.appendChild(btn);
             });
         }
 
-        function renderActivePlayerCard() {
-            const player = players[activePlayerIndex];
+        function renderActiveCard() {
+            const player = roomData.players[activeDisplayedPlayerId] || Object.values(roomData.players)[0];
             if (!player) return;
 
-            // Update Player Profile Header
-            document.getElementById('player-name-input').value = player.name;
-            document.getElementById('player-avatar').textContent = player.name.substring(0, 2).toUpperCase();
+            activeDisplayedPlayerId = player.id;
+            document.getElementById('active-player-title').innerText = `${player.name}'s Card`;
 
-            const stats = getPlayerStats(player);
-            document.getElementById('player-stats-subtitle').textContent = `Completed: ${stats.completed}/25 | Bingos: ${stats.bingos}`;
+            const gridContainer = document.getElementById('bingo-grid');
+            gridContainer.innerHTML = '';
 
-            // Render 5x5 Grid
-            const boardContainer = document.getElementById('active-bingo-board');
-            boardContainer.innerHTML = '';
+            const items = generateCardItems(roomData.seed, player.id);
+            const stamps = player.stamps || {};
+            const { winCount, winningIndices } = checkBingoLines(stamps);
 
-            player.board.forEach((cell, idx) => {
-                const cellEl = document.createElement('div');
-                cellEl.className = `bingo-cell relative min-h-[90px] md:min-h-[115px] p-2 rounded-xl flex flex-col items-center justify-center text-center cursor-pointer select-none transition-all duration-200 border ${
-                    cell.completed 
-                        ? 'bg-horde-cardBg border-horde-gold/60 shadow-[inset_0_0_12px_rgba(217,119,6,0.2)]' 
-                        : 'bg-horde-dark hover:bg-horde-cardBg/60 border-horde-border hover:border-horde-crimson/50'
+            // Update stamped count stat
+            const stampedTotal = Object.keys(stamps).filter(k => stamps[k]).length;
+            document.getElementById('stamped-count').innerText = `${stampedTotal}/25`;
+
+            // Toggle BINGO badge
+            const badge = document.getElementById('bingo-badge');
+            if (winCount > 0) {
+                badge.classList.remove('hidden');
+                badge.innerText = `${winCount} BINGO${winCount > 1 ? 'S' : ''}!`;
+            } else {
+                badge.classList.add('hidden');
+            }
+
+            items.forEach((text, idx) => {
+                const isStamped = !!stamps[idx];
+                const isWinningSquare = winningIndices.has(idx);
+                const isFreeSpace = idx === 12;
+
+                const square = document.createElement('div');
+                square.className = `bingo-square relative p-2 md:p-3 rounded-xl border flex flex-col justify-between items-center text-center cursor-pointer transition select-none min-h-[90px] md:min-h-[115px] ${
+                    isWinningSquare 
+                    ? 'bg-gradient-to-b from-amber-950/80 to-red-950/80 border-amber-500 shadow-lg font-bold'
+                    : isStamped 
+                    ? 'bg-red-950/60 border-red-800 text-amber-200' 
+                    : 'bg-horde-dark hover:bg-gray-800/80 border-horde-border text-gray-300'
                 }`;
 
-                if (cell.isFreeSpace) {
-                    cellEl.classList.add('border-amber-500/80', 'bg-amber-950/20');
-                }
+                square.onclick = () => toggleSquareStamp(player.id, idx);
 
-                const textDiv = document.createElement('div');
-                textDiv.className = `text-[11px] md:text-xs font-semibold leading-tight ${
-                    cell.isFreeSpace ? 'text-amber-400 font-warcraft font-bold' : 'text-gray-300'
-                }`;
-                textDiv.textContent = cell.text;
-
-                cellEl.appendChild(textDiv);
-
-                if (cell.completed) {
-                    const stamp = document.createElement('div');
-                    stamp.className = 'stamp-mark absolute inset-0 flex items-center justify-center pointer-events-none';
-                    stamp.innerHTML = `
-                        <div class="relative flex items-center justify-center">
-                            <i class="fa-solid fa-shield-halved text-4xl md:text-5xl text-horde-brightRed/30"></i>
-                            <i class="fa-solid fa-check text-2xl md:text-4xl text-horde-gold absolute filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"></i>
+                square.innerHTML = `
+                    <div class="text-[10px] md:text-xs font-semibold leading-snug ${isFreeSpace ? 'text-amber-400 font-bold font-warcraft' : ''}">
+                        ${escapeHtml(text)}
+                    </div>
+                    ${isStamped ? `
+                        <div class="stamp-badge stamp-animated text-red-500 text-2xl md:text-3xl mt-1">
+                            <i class="fa-solid fa-shield-halved"></i>
                         </div>
-                    `;
-                    cellEl.appendChild(stamp);
-                }
-
-                cellEl.onclick = () => toggleSquare(activePlayerIndex, idx);
-                boardContainer.appendChild(cellEl);
+                    ` : `
+                        <div class="text-gray-600 text-xs mt-1">
+                            <i class="fa-regular fa-square"></i>
+                        </div>
+                    `}
+                `;
+                gridContainer.appendChild(square);
             });
-        }
-
-        function toggleSquare(playerIdx, squareIdx) {
-            const player = players[playerIdx];
-            if (!player) return;
-
-            player.board[squareIdx].completed = !player.board[squareIdx].completed;
-
-            if (player.board[squareIdx].completed) {
-                playStampSound();
-            }
-
-            const stats = getPlayerStats(player);
-            if (stats.bingos > 0 && player.board[squareIdx].completed) {
-                triggerVictory();
-            }
-
-            saveAppState();
-            renderAll();
-        }
-
-        // Calculate Completed Count & Total Bingos for a player
-        function getPlayerStats(player) {
-            const grid = [];
-            for (let i = 0; i < 5; i++) {
-                grid.push(player.board.slice(i * 5, i * 5 + 5).map(c => c.completed));
-            }
-
-            let bingos = 0;
-            let completed = player.board.filter(c => c.completed).length;
-
-            // Rows and Cols
-            for (let i = 0; i < 5; i++) {
-                if (grid[i].every(Boolean)) bingos++;
-                if ([0,1,2,3,4].map(r => grid[r][i]).every(Boolean)) bingos++;
-            }
-
-            // Diagonals
-            if ([0,1,2,3,4].map(i => grid[i][i]).every(Boolean)) bingos++;
-            if ([0,1,2,3,4].map(i => grid[i][4 - i]).every(Boolean)) bingos++;
-
-            return { completed, bingos };
         }
 
         function renderLeaderboard() {
-            const tbody = document.getElementById('leaderboard-tbody');
-            tbody.innerHTML = '';
+            const container = document.getElementById('leaderboard-list');
+            container.innerHTML = '';
 
-            // Sort players by Bingos descending, then Completed count
-            const sortedPlayers = [...players].map((p, originalIdx) => ({
-                player: p,
-                originalIdx,
-                stats: getPlayerStats(p)
-            })).sort((a, b) => {
-                if (b.stats.bingos !== a.stats.bingos) return b.stats.bingos - a.stats.bingos;
-                return b.stats.completed - a.stats.completed;
+            const players = Object.values(roomData.players || {});
+            
+            // Sort by Bingos first, then stamped count
+            players.sort((a, b) => {
+                const winsA = checkBingoLines(a.stamps || {}).winCount;
+                const winsB = checkBingoLines(b.stamps || {}).winCount;
+                if (winsB !== winsA) return winsB - winsA;
+
+                const countA = Object.keys(a.stamps || {}).filter(k => a.stamps[k]).length;
+                const countB = Object.keys(b.stamps || {}).filter(k => b.stamps[k]).length;
+                return countB - countA;
             });
 
-            sortedPlayers.forEach((item, rank) => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-horde-cardBg/40 transition";
+            players.forEach((player, rank) => {
+                const stamps = player.stamps || {};
+                const stampedTotal = Object.keys(stamps).filter(k => stamps[k]).length;
+                const { winCount } = checkBingoLines(stamps);
 
-                const pct = Math.round((item.stats.completed / 25) * 100);
+                const item = document.createElement('div');
+                item.className = `p-2.5 rounded-lg border flex items-center justify-between text-xs ${
+                    player.id === activeDisplayedPlayerId 
+                    ? 'bg-horde-crimson/30 border-red-600' 
+                    : 'bg-horde-dark border-horde-border'
+                }`;
 
-                tr.innerHTML = `
-                    <td class="py-3 px-4 font-bold font-warcraft text-amber-500">
-                        #${rank + 1}
-                    </td>
-                    <td class="py-3 px-4 font-bold text-gray-200">
-                        ${escapeHtml(item.player.name)}
-                        ${item.originalIdx === activePlayerIndex ? `<span class="text-[10px] ml-2 px-2 py-0.5 bg-horde-crimson text-white rounded">Active</span>` : ''}
-                    </td>
-                    <td class="py-3 px-4 text-center font-semibold text-gray-300">
-                        ${item.stats.completed} / 25
-                    </td>
-                    <td class="py-3 px-4 text-center font-bold text-amber-400">
-                        ${item.stats.bingos > 0 ? `<i class="fa-solid fa-crown mr-1"></i>${item.stats.bingos}` : '0'}
-                    </td>
-                    <td class="py-3 px-4 text-center min-w-[140px]">
-                        <div class="w-full bg-gray-800 h-3 rounded-full overflow-hidden border border-gray-700">
-                            <div class="bg-gradient-to-r from-horde-crimson to-amber-500 h-full transition-all duration-300" style="width: ${pct}%"></div>
-                        </div>
-                    </td>
-                    <td class="py-3 px-4 text-right">
-                        <button onclick="switchToPlayer(${item.originalIdx})" class="px-2.5 py-1 bg-gray-800 hover:bg-gray-700 text-xs font-semibold rounded text-amber-400 border border-gray-700">
-                            View Card
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function switchToPlayer(idx) {
-            activePlayerIndex = idx;
-            switchView('card');
-            saveAppState();
-            renderAll();
-        }
-
-        function updatePlayerBadge() {
-            document.getElementById('total-players-badge').textContent = `${players.length} Players Active`;
-        }
-
-        // Player Actions
-        function addNewPlayer() {
-            const name = prompt("Enter new player name (e.g. Grom, Rexxar):", `Player ${players.length + 1}`);
-            if (!name || !name.trim()) return;
-
-            const newBoard = generateBoardForPlayer(sharedSeed ? sharedSeed + '_' + players.length : null);
-            players.push({
-                id: 'player_' + Date.now(),
-                name: name.trim(),
-                board: newBoard
-            });
-
-            activePlayerIndex = players.length - 1;
-            saveAppState();
-            renderAll();
-        }
-
-        function renameCurrentPlayer(newName) {
-            if (!newName || !newName.trim()) return;
-            players[activePlayerIndex].name = newName.trim();
-            saveAppState();
-            renderAll();
-        }
-
-        function removeCurrentPlayer() {
-            if (players.length <= 1) {
-                alert("You must keep at least 1 player active!");
-                return;
-            }
-
-            if (confirm(`Are you sure you want to delete ${players[activePlayerIndex].name}?`)) {
-                players.splice(activePlayerIndex, 1);
-                if (activePlayerIndex >= players.length) activePlayerIndex = players.length - 1;
-                saveAppState();
-                renderAll();
-            }
-        }
-
-        function randomizeCurrentPlayerCard() {
-            if (confirm(`Reshuffle board for ${players[activePlayerIndex].name}? Progress on this card will be cleared.`)) {
-                players[activePlayerIndex].board = generateBoardForPlayer();
-                saveAppState();
-                renderAll();
-            }
-        }
-
-        function resetAllProgress() {
-            if (confirm("Reset ALL stamped squares across ALL players?")) {
-                players.forEach(p => {
-                    p.board.forEach(c => {
-                        if (!c.isFreeSpace) c.completed = false;
-                    });
-                });
-                saveAppState();
-                renderAll();
-            }
-        }
-
-        // View Switcher
-        function switchView(viewName) {
-            currentView = viewName;
-            const cardView = document.getElementById('view-card-container');
-            const leaderboardView = document.getElementById('view-leaderboard-container');
-            const btnCard = document.getElementById('view-btn-card');
-            const btnLeader = document.getElementById('view-btn-leaderboard');
-
-            if (viewName === 'card') {
-                cardView.classList.remove('hidden');
-                leaderboardView.classList.add('hidden');
-                btnCard.className = "px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition bg-horde-crimson text-white";
-                btnLeader.className = "px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition text-gray-400 hover:text-white";
-            } else {
-                cardView.classList.add('hidden');
-                leaderboardView.classList.remove('hidden');
-                btnLeader.className = "px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition bg-horde-crimson text-white";
-                btnCard.className = "px-3 py-1.5 rounded-lg text-xs md:text-sm font-bold transition text-gray-400 hover:text-white";
-            }
-        }
-
-        // Modal Handlers
-        function openModal(id) { document.getElementById(id).classList.remove('hidden'); }
-        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
-
-        function openSeedModal() {
-            document.getElementById('seed-input-field').value = sharedSeed;
-            openModal('seed-modal');
-        }
-
-        function generateRandomSeedInput() {
-            document.getElementById('seed-input-field').value = 'HORDE_' + Math.floor(Math.random() * 89999 + 10000);
-        }
-
-        function applySharedSeed() {
-            const seedVal = document.getElementById('seed-input-field').value.trim();
-            sharedSeed = seedVal;
-
-            if (confirm("Regenerate cards for all players using this seed string?")) {
-                players.forEach((p, idx) => {
-                    p.board = generateBoardForPlayer(sharedSeed ? sharedSeed + '_' + idx : null);
-                });
-                saveAppState();
-                renderAll();
-                closeModal('seed-modal');
-            }
-        }
-
-        function openPoolModal() {
-            document.getElementById('pool-textarea').value = challengePool.join('\n');
-            openModal('pool-modal');
-        }
-
-        function restoreDefaultPool() {
-            document.getElementById('pool-textarea').value = DEFAULT_POOL.join('\n');
-        }
-
-        function saveChallengePool() {
-            const lines = document.getElementById('pool-textarea').value
-                .split('\n')
-                .map(l => l.trim())
-                .filter(l => l.length > 0);
-
-            if (lines.length < 24) {
-                alert("Please provide at least 24 challenges in the pool to fill the grid!");
-                return;
-            }
-
-            challengePool = lines;
-            players.forEach((p, idx) => {
-                p.board = generateBoardForPlayer(sharedSeed ? sharedSeed + '_' + idx : null);
-            });
-
-            saveAppState();
-            renderAll();
-            closeModal('pool-modal');
-        }
-
-        // Print Execution
-        function openPrintModal() {
-            openModal('print-modal');
-        }
-
-        function executePrint() {
-            closeModal('print-modal');
-            const scope = document.querySelector('input[name="print-scope"]:checked').value;
-            const printContainer = document.getElementById('print-container');
-            printContainer.innerHTML = '';
-
-            const targetPlayers = (scope === 'all') ? players : [players[activePlayerIndex]];
-
-            targetPlayers.forEach(player => {
-                const pageEl = document.createElement('div');
-                pageEl.className = 'print-card-page';
-
-                pageEl.innerHTML = `
-                    <div class="text-center mb-4">
-                        <h1 class="text-2xl font-bold font-warcraft uppercase">Send Ibuprofen - Horde Bingo</h1>
-                        <h2 class="text-lg font-bold text-gray-800">Player: ${escapeHtml(player.name)}</h2>
+                item.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <span class="font-bold text-gray-500 w-4">${rank + 1}.</span>
+                        <span class="font-semibold text-gray-200">${escapeHtml(player.name)}</span>
                     </div>
-
-                    <div class="bingo-grid-container border-2 border-black p-2">
-                        <div class="grid grid-cols-5 text-center font-bold font-warcraft text-xl border-b-2 border-black pb-1 mb-1">
-                            <div>B</div><div>I</div><div>N</div><div>G</div><div>O</div>
-                        </div>
-                        <div class="grid grid-cols-5 border-t border-l border-black">
-                            ${player.board.map(cell => `
-                                <div class="bingo-cell ${cell.completed ? 'completed' : ''} border-r border-b border-black p-2 min-h-[95px] text-center flex flex-col justify-center items-center text-[10px] font-semibold leading-tight relative">
-                                    <div>${escapeHtml(cell.text)}</div>
-                                    ${cell.completed ? `<div class="stamp-mark absolute font-bold text-red-700 text-lg">✓</div>` : ''}
-                                </div>
-                            `).join('')}
-                        </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-amber-400 font-mono">${stampedTotal}/25</span>
+                        ${winCount > 0 ? `<span class="bg-amber-500 text-black px-1.5 py-0.5 rounded font-black text-[10px]">${winCount} BINGO</span>` : ''}
                     </div>
                 `;
-                printContainer.appendChild(pageEl);
+                container.appendChild(item);
             });
-
-            window.print();
         }
 
-        // Victory Fireworks
-        let victoryActive = false;
-        function triggerVictory() {
-            if (victoryActive) return;
-            victoryActive = true;
+        function toggleSquareStamp(playerId, squareIndex) {
+            const player = roomData.players[playerId];
+            if (!player) return;
 
-            playFanfareSound();
-            startConfetti();
+            if (!player.stamps) player.stamps = {};
+            
+            const prevWinCount = checkBingoLines(player.stamps).winCount;
+            player.stamps[squareIndex] = !player.stamps[squareIndex];
+            const newWinCount = checkBingoLines(player.stamps).winCount;
 
-            setTimeout(() => {
-                victoryActive = false;
-            }, 1000);
-        }
-
-        function startConfetti() {
-            const canvas = document.getElementById('bingo-canvas');
-            const ctx = canvas.getContext('2d');
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-
-            const particles = [];
-            const colors = ['#dc2626', '#b91c1c', '#d97706', '#fbbf24', '#ffffff'];
-
-            for (let i = 0; i < 120; i++) {
-                particles.push({
-                    x: canvas.width / 2,
-                    y: canvas.height / 2,
-                    vx: (Math.random() - 0.5) * 16,
-                    vy: (Math.random() - 0.8) * 16,
-                    size: Math.random() * 8 + 4,
-                    color: colors[Math.floor(Math.random() * colors.length)],
-                    life: 100
-                });
-            }
-
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                let alive = false;
-
-                particles.forEach(p => {
-                    if (p.life > 0) {
-                        alive = true;
-                        p.x += p.vx;
-                        p.y += p.vy;
-                        p.vy += 0.3;
-                        p.life--;
-
-                        ctx.fillStyle = p.color;
-                        ctx.beginPath();
-                        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-                });
-
-                if (alive) {
-                    requestAnimationFrame(animate);
+            if (player.stamps[squareIndex]) {
+                if (newWinCount > prevWinCount) {
+                    playSound('bingo');
                 } else {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    playSound('stamp');
                 }
             }
 
-            animate();
+            syncRoomData();
+            renderAll();
         }
+
+        window.addNewPlayerPrompt = function() {
+            const name = prompt("Enter new player name:");
+            if (!name || !name.trim()) return;
+
+            const newId = 'p_' + Math.random().toString(36).substring(2, 9);
+            roomData.players[newId] = {
+                id: newId,
+                name: name.trim(),
+                stamps: { 12: true } // Free space pre-stamped
+            };
+
+            activeDisplayedPlayerId = newId;
+            syncRoomData();
+            renderAll();
+        };
+
+        window.updateCardSeed = function(newSeed) {
+            if (!newSeed || !newSeed.trim()) return;
+            roomData.seed = newSeed.trim().toUpperCase();
+            syncRoomData();
+            renderAll();
+        };
+
+        window.randomizeActiveCard = function() {
+            roomData.seed = 'SEED_' + Math.random().toString(36).substring(2, 7).toUpperCase();
+            syncRoomData();
+            renderAll();
+        };
+
+        function syncRoomData() {
+            if (db) {
+                set(ref(db, `rooms/${currentRoomId}`), roomData);
+            } else {
+                localStorage.setItem(`ibuprofen_room_${currentRoomId}`, JSON.stringify(roomData));
+            }
+        }
+
+        function initFirebase(config) {
+            try {
+                const app = initializeApp(config);
+                db = getDatabase(app);
+                
+                // Subscribe to real-time room changes
+                onValue(ref(db, `rooms/${currentRoomId}`), (snapshot) => {
+                    const val = snapshot.val();
+                    if (val) {
+                        roomData = val;
+                        renderAll();
+                    } else {
+                        // First time room setup
+                        syncRoomData();
+                    }
+                });
+
+                document.getElementById('sync-status').innerHTML = `<i class="fa-solid fa-wifi text-xs text-green-400"></i> Firebase Live`;
+            } catch (err) {
+                console.error("Firebase connection error:", err);
+                document.getElementById('sync-status').innerHTML = `<i class="fa-solid fa-triangle-exclamation text-amber-400"></i> Local Only`;
+            }
+        }
+
+        window.saveFirebaseConfig = function() {
+            const configRaw = document.getElementById('firebase-config-input').value.trim();
+            if (!configRaw) return;
+            try {
+                const config = JSON.parse(configRaw);
+                localStorage.setItem('ibuprofen_firebase_config', configRaw);
+                initFirebase(config);
+                closeModal('room-modal');
+            } catch (e) {
+                alert("Invalid JSON Firebase Configuration.");
+            }
+        };
+
+        window.switchRoom = function(newRoomCode) {
+            if (!newRoomCode || !newRoomCode.trim()) return;
+            currentRoomId = newRoomCode.trim().toUpperCase();
+            
+            // Update URL hash without reload
+            window.location.hash = currentRoomId;
+
+            if (db) {
+                onValue(ref(db, `rooms/${currentRoomId}`), (snapshot) => {
+                    const val = snapshot.val();
+                    if (val) {
+                        roomData = val;
+                    } else {
+                        syncRoomData();
+                    }
+                    renderAll();
+                });
+            } else {
+                const saved = localStorage.getItem(`ibuprofen_room_${currentRoomId}`);
+                if (saved) roomData = JSON.parse(saved);
+                else syncRoomData();
+                renderAll();
+            }
+            closeModal('room-modal');
+        };
+
+        window.openModal = function(id) {
+            document.getElementById(id).classList.remove('hidden');
+        };
+
+        window.closeModal = function(id) {
+            document.getElementById(id).classList.add('hidden');
+        };
+
+        window.toggleSound = function() {
+            audioEnabled = !audioEnabled;
+            const icon = document.getElementById('sound-icon');
+            if (audioEnabled) {
+                icon.className = 'fa-solid fa-volume-high text-amber-500';
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-gray-500';
+            }
+        };
+
+        window.shareRoomLink = function() {
+            const url = window.location.origin + window.location.pathname + '#' + currentRoomId;
+            navigator.clipboard ? navigator.clipboard.writeText(url) : document.execCommand('copy');
+            alert(`Room URL copied to clipboard!\n${url}`);
+        };
+
+        window.openPrintModal = function() {
+            const activePlayer = roomData.players[activeDisplayedPlayerId];
+            document.getElementById('print-active-name').innerText = activePlayer ? activePlayer.name : 'Active Player';
+            document.getElementById('print-all-count').innerText = Object.keys(roomData.players || {}).length;
+            openModal('print-modal');
+        };
+
+        window.triggerPrintExecution = function() {
+            closeModal('print-modal');
+            window.print();
+        };
+
+        window.saveCustomPool = function() {
+            const text = document.getElementById('pool-textarea').value;
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if (lines.length < 24) {
+                alert("Please provide at least 24 challenges.");
+                return;
+            }
+            masterPool = lines;
+            closeModal('pool-modal');
+            renderAll();
+        };
+
+        window.resetDefaultPool = function() {
+            masterPool = [...DEFAULT_CHALLENGES];
+            document.getElementById('pool-textarea').value = masterPool.join('\n');
+            renderAll();
+        };
 
         function escapeHtml(str) {
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
         }
 
-        window.onload = function() {
-            initApp();
-        };
+        // INITIALIZATION ON LOAD
+        window.addEventListener('DOMContentLoaded', () => {
+            // Check room from URL hash
+            if (window.location.hash) {
+                currentRoomId = window.location.hash.substring(1).toUpperCase();
+            }
+
+            // Populate pool editor textarea
+            document.getElementById('pool-textarea').value = masterPool.join('\n');
+
+            // Check saved Firebase config
+            const savedFb = localStorage.getItem('ibuprofen_firebase_config');
+            if (savedFb) {
+                document.getElementById('firebase-config-input').value = savedFb;
+                initFirebase(JSON.parse(savedFb));
+            } else {
+                const localSaved = localStorage.getItem(`ibuprofen_room_${currentRoomId}`);
+                if (localSaved) roomData = JSON.parse(localSaved);
+            }
+
+            renderAll();
+        });
     </script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Live Database Updates</title>
-</head>
-<body>
-  <h1>Realtime Updates</h1>
-  <div id="live-content">Waiting for updates...</div>
-
-  <!-- Include Firebase SDKs via your preferred CDN or bundler -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-    // Your Firebase project configuration
-    const firebaseConfig = {
-      databaseURL: "https://send-ibuprofen-bingo-default-rtdb.firebaseio.com"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // Reference the database path you want to watch
-    const livePathRef = ref(db, 'updates/message');
-
-    // Automatically trigger whenever data at this path changes
-    onValue(livePathRef, (snapshot) => {
-      const data = snapshot.val();
-      document.getElementById("live-content").innerText = data || "No data available";
-    });
-  </script>
 </body>
 </html>
