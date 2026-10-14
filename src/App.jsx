@@ -2,6 +2,16 @@ import React, { useState, useEffect, useRef } from 'react';
 import { initializeApp, getApps } from "firebase/app";
 import { getDatabase, ref, set, onValue } from "firebase/database";
 
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDcru0r1xQJEXiCI-itA1oYMSZL3eSP4KU",
+  authDomain: "send-ibuprofen-bingo.firebaseapp.com",
+  databaseURL: "https://send-ibuprofen-bingo-default-rtdb.firebaseio.com/",
+  projectId: "send-ibuprofen-bingo",
+  storageBucket: "send-ibuprofen-bingo.firebasestorage.app",
+  messagingSenderId: "995194665466",
+  appId: "1:995194665466:web:d6d0d62f078f0e011d4c43"
+};
+
 const DEFAULT_CHALLENGES = [
     "Stand next to King Anduin Wrynn in Stormwind Keep",
     "Ride the Deeprun Tram from Stormwind to Ironforge",
@@ -65,10 +75,21 @@ export default function App() {
   const dbRef = useRef(null);
 
   useEffect(() => {
-      localStorage.setItem('wow_bingo_user_id', myPlayerId);
-      localStorage.setItem('wow_bingo_user_name', myPlayerName);
-  }, [myPlayerId, myPlayerName]);
+      const params = new URLSearchParams(window.location.search);
+      const urlRoom = params.get('room')?.toUpperCase() || 'GLOBAL';
+      setCurrentRoomId(urlRoom);
 
+      try {
+          const app = !getApps().length ? initializeApp(FIREBASE_CONFIG) : getApps()[0];
+          const database = getDatabase(app);
+          dbRef.current = database;
+          setSyncStatus({ text: 'Firebase Connected', color: 'text-amber-400' });
+          subscribeToRoom(urlRoom, database);
+      } catch (err) {
+          console.error("Firebase initialization failed:", err);
+          setSyncStatus({ text: 'Config Error', color: 'text-red-500' });
+      }
+  }, []);
   // Construct Firebase Config Object from env
   const getFirebaseConfig = () => {
       if (import.meta.env.VITE_FIREBASE_API_KEY) {
