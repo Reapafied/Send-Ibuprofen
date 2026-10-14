@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApps } from "firebase/app";
 import { getDatabase, ref, set, onValue } from "firebase/database";
 
 const DEFAULT_CHALLENGES = [
@@ -65,6 +65,37 @@ export default function App() {
   const [printOption, setPrintOption] = useState('active');
 
   const dbRef = useRef(null);
+
+  // Auto-connect Firebase from GitHub Actions secret or environment variables
+  useEffect(() => {
+      const envConfig = import.meta.env.VITE_FIREBASE_CONFIG;
+      if (envConfig) {
+          try {
+              const config = typeof envConfig === 'string' ? JSON.parse(envConfig) : envConfig;
+              const app = !getApps().length ? initializeApp(config) : getApps()[0];
+              const database = getDatabase(app);
+              dbRef.current = database;
+              setSyncStatus({ text: 'Firebase Connected', color: 'text-amber-400' });
+              subscribeToRoom(currentRoomId, database);
+          } catch (err) {
+              console.error("Auto Firebase initialization failed:", err);
+          }
+      }
+  }, []);
+
+  // Check URL params for room code on mount
+  useEffect(() => {
+      const params = new URLSearchParams(window.location.search);
+      const roomParam = params.get('room');
+      if (roomParam) {
+          const formattedRoom = roomParam.toUpperCase();
+          setCurrentRoomId(formattedRoom);
+          setInputRoomId(formattedRoom);
+          if (dbRef.current) {
+              subscribeToRoom(formattedRoom, dbRef.current);
+          }
+      }
+  }, []);
 
   const playSound = (type) => {
       if (!audioEnabled) return;
@@ -147,7 +178,7 @@ export default function App() {
   const saveFirebaseConfig = () => {
       try {
           const config = JSON.parse(firebaseConfigInput);
-          const app = initializeApp(config);
+          const app = !getApps().length ? initializeApp(config) : getApps()[0];
           const database = getDatabase(app);
           dbRef.current = database;
           setSyncStatus({ text: 'Firebase Connected', color: 'text-amber-400' });
@@ -234,15 +265,6 @@ export default function App() {
       navigator.clipboard.writeText(url);
       alert("Room link copied to clipboard: " + url);
   };
-
-  useEffect(() => {
-      const params = new URLSearchParams(window.location.search);
-      const roomParam = params.get('room');
-      if (roomParam) {
-          setCurrentRoomId(roomParam.toUpperCase());
-          setInputRoomId(roomParam.toUpperCase());
-      }
-  }, []);
 
   const activePlayer = roomData.players[activePlayerId] || Object.values(roomData.players)[0] || { id: 'p_default', name: 'Mankrik', stamps: { 12: true } };
   const activeItems = generateCardItems(roomData.seed || 'BARRENS2026', activePlayer.id);
