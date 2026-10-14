@@ -255,22 +255,37 @@ export default function App() {
   const toggleSquareStamp = (targetPlayerId, squareIndex) => {
       if (targetPlayerId !== myPlayerId || squareIndex === 12) return;
 
-      const updatedPlayers = { ...roomData.players };
-      const player = updatedPlayers[myPlayerId] || { id: myPlayerId, name: myPlayerName, stamps: { 12: true } };
-
+      const player = roomData.players?.[myPlayerId] || { id: myPlayerId, name: myPlayerName, stamps: { 12: true } };
       const stamps = { ...(player.stamps || {}) };
       const wasStamped = !!stamps[squareIndex];
-      stamps[squareIndex] = !wasStamped;
+      if (wasStamped) {
+          delete stamps[squareIndex];
+      } else {
+          stamps[squareIndex] = true;
+      }
 
       const oldWins = checkBingoLines(player.stamps || {}).winCount;
       const newWins = checkBingoLines(stamps).winCount;
 
-      player.stamps = stamps;
-      player.name = myPlayerName;
-      updatedPlayers[myPlayerId] = player;
+      setRoomData((current) => ({
+          ...current,
+          players: {
+              ...(current.players || {}),
+              [myPlayerId]: {
+                  ...(current.players?.[myPlayerId] || player),
+                  name: myPlayerName,
+                  stamps
+              }
+          }
+      }));
 
-    const playerRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}/players/${myPlayerId}`);
-    update(playerRef, { name: myPlayerName, stamps }).catch(handleDatabaseError);
+      if (dbRef.current) {
+          const playerRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}/players/${myPlayerId}`);
+          update(playerRef, {
+              name: myPlayerName,
+              [`stamps/${squareIndex}`]: wasStamped ? null : true
+          }).catch(handleDatabaseError);
+      }
 
       if (!wasStamped) {
           playSound('stamp');
@@ -435,6 +450,9 @@ export default function App() {
                                 />
                                 <button type="submit" className="px-2 py-1 bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-600 rounded text-xs font-semibold">
                                     Go
+                                </button>
+                                <button type="button" onClick={resetRoom} className="px-2 py-1 bg-red-950 hover:bg-red-900 text-red-300 border border-red-800 rounded text-xs font-semibold">
+                                    Reset Room
                                 </button>
                             </form>
                             <span className={`flex items-center gap-1 ${syncStatus.color}`}><i className="fa-solid fa-signal text-[10px]"></i> {syncStatus.text}</span>
@@ -607,9 +625,6 @@ export default function App() {
                             </button>
                             <button onClick={resetBoard} className="text-amber-400 hover:text-amber-300 hover:underline flex items-center gap-1">
                                 <i className="fa-solid fa-rotate"></i> Reset Board
-                            </button>
-                            <button onClick={resetRoom} className="text-red-400 hover:text-red-300 hover:underline flex items-center gap-1">
-                                <i className="fa-solid fa-trash-can"></i> Reset Room
                             </button>
                         </div>
                     </div>
