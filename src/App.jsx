@@ -71,13 +71,14 @@ export default function App() {
       localStorage.setItem('wow_bingo_user_name', myPlayerName);
   }, [myPlayerId, myPlayerName]);
 
-  // Read URL params and auto-connect to Firebase Secret
+ // Read URL params and auto-connect to Firebase Secret
   useEffect(() => {
       const params = new URLSearchParams(window.location.search);
       const urlRoom = params.get('room')?.toUpperCase() || 'GLOBAL';
       setCurrentRoomId(urlRoom);
 
       const envConfig = import.meta.env.VITE_FIREBASE_CONFIG;
+      
       if (envConfig) {
           try {
               const config = typeof envConfig === 'string' ? JSON.parse(envConfig) : envConfig;
