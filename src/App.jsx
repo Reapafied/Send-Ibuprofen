@@ -89,6 +89,7 @@ export default function App() {
 
   const dbRef = useRef(null);
     const previousBingoCountsRef = useRef(null);
+    const previousPlayerNamesRef = useRef(null);
 
   // Construct Firebase Config Object from env
   const getFirebaseConfig = () => {
@@ -152,7 +153,11 @@ export default function App() {
                       checkBingoLines(player.stamps || {}).winCount
                   ])
               );
+              const playerNames = Object.fromEntries(
+                  Object.entries(players).map(([playerId, player]) => [playerId, player.name || ''])
+              );
               const previousBingoCounts = previousBingoCountsRef.current;
+              const previousPlayerNames = previousPlayerNamesRef.current;
               if (previousBingoCounts) {
                   Object.entries(bingoCounts).forEach(([playerId, winCount]) => {
                       if (playerId !== myPlayerId &&
@@ -162,7 +167,18 @@ export default function App() {
                       }
                   });
               }
+              if (previousPlayerNames) {
+                  Object.entries(playerNames).forEach(([playerId, playerName]) => {
+                      const normalizedName = playerName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                      const previousName = previousPlayerNames[playerId] || '';
+                      const previousNormalizedName = previousName.toLowerCase().replace(/[^a-z0-9]/g, '');
+                      if (normalizedName === 'joehendry' && previousNormalizedName !== 'joehendry') {
+                          playSound('easterEgg');
+                      }
+                  });
+              }
               previousBingoCountsRef.current = bingoCounts;
+              previousPlayerNamesRef.current = playerNames;
               setRoomData({ ...val, players });
               setSyncStatus({ text: 'Connected', color: 'text-amber-400' });
               const savedPlayer = val.players?.[myPlayerId];
@@ -197,7 +213,8 @@ export default function App() {
           const soundFiles = {
               stamp: 'stamp.wav',
               bingo: 'bingo.wav',
-              opponentBingo: 'opponent-bingo.wav'
+              opponentBingo: 'opponent-bingo.wav',
+              easterEgg: 'easteregg.wav'
           };
           const fileName = soundFiles[type];
           if (!fileName) return;
