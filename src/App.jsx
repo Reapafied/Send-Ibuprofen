@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { initializeApp, getApps } from "firebase/app";
-import { getDatabase, ref, set, onValue } from "firebase/database";
+import { getDatabase, ref, set, update, onValue } from "firebase/database";
 
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDcru0r1xQJEXiCI-itA1oYMSZL3eSP4KU",
@@ -55,10 +55,16 @@ export default function App() {
   const [masterPool, setMasterPool] = useState(DEFAULT_CHALLENGES);
   
   const [myPlayerId] = useState(() => {
-      return localStorage.getItem('wow_bingo_user_id') || 'p_' + Math.random().toString(36).substring(2, 9);
+      const savedId = localStorage.getItem('wow_bingo_user_id');
+      if (savedId) return savedId;
+      const newId = 'p_' + Math.random().toString(36).substring(2, 9);
+      localStorage.setItem('wow_bingo_user_id', newId);
+      return newId;
   });
   const [myPlayerName, setMyPlayerName] = useState(() => {
-      return localStorage.getItem('wow_bingo_user_name') || 'Mankrik';
+      const savedName = localStorage.getItem('wow_bingo_user_name') || 'Mankrik';
+      localStorage.setItem('wow_bingo_user_name', savedName);
+      return savedName;
   });
 
   const [roomData, setRoomData] = useState({
@@ -74,22 +80,6 @@ export default function App() {
 
   const dbRef = useRef(null);
 
-  useEffect(() => {
-      const params = new URLSearchParams(window.location.search);
-      const urlRoom = params.get('room')?.toUpperCase() || 'GLOBAL';
-      setCurrentRoomId(urlRoom);
-
-      try {
-          const app = !getApps().length ? initializeApp(FIREBASE_CONFIG) : getApps()[0];
-          const database = getDatabase(app);
-          dbRef.current = database;
-          setSyncStatus({ text: 'Firebase Connected', color: 'text-amber-400' });
-          subscribeToRoom(urlRoom, database);
-      } catch (err) {
-          console.error("Firebase initialization failed:", err);
-          setSyncStatus({ text: 'Config Error', color: 'text-red-500' });
-      }
-  }, []);
   // Construct Firebase Config Object from env
   const getFirebaseConfig = () => {
       if (import.meta.env.VITE_FIREBASE_API_KEY) {
@@ -110,7 +100,7 @@ export default function App() {
                   : import.meta.env.VITE_FIREBASE_CONFIG;
           } catch (e) { return null; }
       }
-      return null;
+      return FIREBASE_CONFIG;
   };
 
   useEffect(() => {
@@ -120,19 +110,16 @@ export default function App() {
 
       const config = getFirebaseConfig();
 
-      if (config && config.databaseURL) {
-          try {
-              const app = !getApps().length ? initializeApp(config) : getApps()[0];
-              const database = getDatabase(app);
-              dbRef.current = database;
-              setSyncStatus({ text: 'Firebase Connected', color: 'text-amber-400' });
-              subscribeToRoom(urlRoom, database);
-          } catch (err) {
-              console.error("Firebase initialization failed:", err);
-              setSyncStatus({ text: 'Config Error', color: 'text-red-500' });
-          }
-      } else {
-          setSyncStatus({ text: 'No Secret Config Found', color: 'text-red-400' });
+      try {
+          const app = !getApps().length ? initializeApp(config) : getApps()[0];
+          const database = getDatabase(app);
+          dbRef.current = database;
+          setSyncStatus({ text: 'Connecting...', color: 'text-amber-400' });
+          const unsubscribe = subscribeToRoom(urlRoom, database);
+          return unsubscribe;
+      } catch (err) {
+          console.error("Firebase initialization failed:", err);
+          setSyncStatus({ text: 'Config Error', color: 'text-red-500' });
       }
   }, []);
 
@@ -141,41 +128,31 @@ export default function App() {
       setCurrentRoomId(roomId);
 
       const roomNodeRef = ref(database, `wow_bingo_rooms/${roomId}`);
-      onValue(roomNodeRef, (snapshot) => {
+      return onValue(roomNodeRef, (snapshot) => {
           const val = snapshot.val();
           if (val) {
               setRoomData(val);
+              setSyncStatus({ text: 'Connected', color: 'text-amber-400' });
               if (!val.players?.[myPlayerId]) {
                   registerUserInRoom(roomId, database, val);
               }
           } else {
-              const initialData = {
-                  seed: 'BARRENS2026',
-                  players: {
-                      [myPlayerId]: { id: myPlayerId, name: myPlayerName, stamps: { 12: true } }
-                  }
-              };
-              set(roomNodeRef, initialData);
-              setRoomData(initialData);
+              update(roomNodeRef, { seed: 'BARRENS2026' })
+                  .then(() => registerUserInRoom(roomId, database, {}))
+                  .catch(handleDatabaseError);
           }
-      });
+      }, handleDatabaseError);
   };
 
   const registerUserInRoom = (roomId, database, existingRoomData) => {
-      const updatedPlayers = {
-          ...(existingRoomData.players || {}),
-          [myPlayerId]: { id: myPlayerId, name: myPlayerName, stamps: { 12: true } }
-      };
-      const playersRef = ref(database, `wow_bingo_rooms/${roomId}/players`);
-      set(playersRef, updatedPlayers);
+      const playerRef = ref(database, `wow_bingo_rooms/${roomId}/players/${myPlayerId}`);
+      set(playerRef, { id: myPlayerId, name: myPlayerName, stamps: { 12: true } })
+          .catch(handleDatabaseError);
   };
 
-  const pushRoomUpdate = (newRoomData) => {
-      setRoomData(newRoomData);
-      if (dbRef.current) {
-          const roomNodeRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}`);
-          set(roomNodeRef, newRoomData);
-      }
+  const handleDatabaseError = (error) => {
+      console.error('Firebase database operation failed:', error);
+      setSyncStatus({ text: 'Write failed', color: 'text-red-400' });
   };
 
   const playSound = (type) => {
