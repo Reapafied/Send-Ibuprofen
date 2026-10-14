@@ -56,7 +56,6 @@ export default function App() {
     const [roomCodeDraft, setRoomCodeDraft] = useState(() =>
             new URLSearchParams(window.location.search).get('room')?.toUpperCase() || 'GLOBAL'
     );
-  const [audioEnabled, setAudioEnabled] = useState(true);
   const [masterPool, setMasterPool] = useState(DEFAULT_CHALLENGES);
   
   const [myPlayerId] = useState(() => {
@@ -90,11 +89,6 @@ export default function App() {
 
   const dbRef = useRef(null);
     const previousBingoCountsRef = useRef(null);
-    const audioEnabledRef = useRef(audioEnabled);
-
-    useEffect(() => {
-            audioEnabledRef.current = audioEnabled;
-    }, [audioEnabled]);
 
   // Construct Firebase Config Object from env
   const getFirebaseConfig = () => {
@@ -199,7 +193,6 @@ export default function App() {
   };
 
   const playSound = (type) => {
-      if (!audioEnabledRef.current) return;
       try {
           const soundFiles = {
               stamp: 'stamp.wav',
@@ -488,12 +481,6 @@ export default function App() {
                     <button onClick={() => setActiveModal('pool')} className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg text-xs font-semibold border border-gray-600/40 flex items-center gap-1.5">
                         <i className="fa-solid fa-list-check text-amber-500"></i> Edit Pool
                     </button>
-                    <button onClick={() => setAudioEnabled(!audioEnabled)} className="p-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-xs" title="Toggle Audio">
-                        <i className={`fa-solid ${audioEnabled ? 'fa-volume-high text-amber-500' : 'fa-volume-xmark text-gray-500'}`}></i>
-                    </button>
-                    <button onClick={() => setActiveModal('print')} className="px-3 py-1.5 bg-amber-700 hover:bg-amber-600 text-white rounded-lg text-xs font-bold border border-amber-500/50 flex items-center gap-1.5">
-                        <i className="fa-solid fa-print"></i> Print
-                    </button>
                 </div>
             </div>
         </header>
@@ -682,31 +669,6 @@ export default function App() {
                             setMasterPool(newPool);
                             setActiveModal(null);
                         }} className="px-4 py-2 bg-[#8b0000] hover:bg-red-600 text-white text-xs font-bold rounded-lg">Save Pool Changes</button>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {activeModal === 'print' && (
-            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-[#1a1414] border border-[#3f2d2d] rounded-2xl max-w-md w-full p-6 shadow-2xl horde-border">
-                    <div className="flex justify-between items-center mb-4 border-b border-[#3f2d2d] pb-3">
-                        <h3 className="text-lg font-bold font-['Cinzel'] text-amber-400 flex items-center gap-2">
-                            <i className="fa-solid fa-print"></i> Print Bingo Cards
-                        </h3>
-                        <button onClick={() => setActiveModal(null)} className="text-gray-400 hover:text-white"><i className="fa-solid fa-xmark text-lg"></i></button>
-                    </div>
-                    <div className="space-y-3 mb-6 text-xs text-gray-300">
-                        <p>Page formatting strips dark backgrounds for high-contrast ink printing.</p>
-                        <label className="flex items-center gap-2 cursor-pointer pt-2">
-                            <input type="radio" name="print-option" checked readOnly className="accent-amber-500" />
-                            <span>Print Currently Displayed Card (<strong className="text-amber-400">{activeViewPlayer.name}</strong>)</span>
-                        </label>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                        <button onClick={() => { setActiveModal(null); window.print(); }} className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-black text-xs font-bold rounded-lg flex items-center gap-1.5">
-                            <i className="fa-solid fa-print"></i> Open Print Dialog
-                        </button>
                     </div>
                 </div>
             </div>
