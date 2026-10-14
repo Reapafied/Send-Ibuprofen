@@ -14,7 +14,7 @@ const FIREBASE_CONFIG = {
 
 const DEFAULT_CHALLENGES = [
     "Stand next to King Anduin Wrynn in Stormwind Keep",
-    "Ride the Deeprun Tram from Stormwind to Ironforge",
+    "Ride the Deeprun Tram and survive",
     "Get mind-controlled by an Alliance Priest & emote /dance",
     "Take a selfie/screenshot at the top of Darnassus Bank",
     "Attune to or click an Alliance Flight Master",
