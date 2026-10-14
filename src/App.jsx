@@ -329,13 +329,13 @@ export default function App() {
       alert("Player session link copied to clipboard. Anyone with this link can use this player's card:\n" + shareableUrl);
   };
 
-  const resetRoom = async () => {
+  const resetBoard = async () => {
       const confirmed = window.confirm(
-          `Reset room ${currentRoomId}? This clears every card's stamps and resets card seeds, but keeps player names and IDs.`
+          `Reset the board for room ${currentRoomId}? Player names and IDs will stay, but all stamps and card seeds will reset.`
       );
       if (!confirmed || !dbRef.current) return;
 
-      setSyncStatus({ text: 'Resetting room...', color: 'text-amber-400' });
+      setSyncStatus({ text: 'Resetting boards...', color: 'text-amber-400' });
       const roomRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}`);
       const resetPlayers = Object.fromEntries(
           Object.entries(roomData.players || {}).map(([playerId, player]) => [playerId, {
@@ -350,7 +350,25 @@ export default function App() {
           await set(roomRef, { seed: 'BARRENS2026', players: resetPlayers });
           setRoomData({ seed: 'BARRENS2026', players: resetPlayers });
           setActiveViewPlayerId(myPlayerId);
-          setSyncStatus({ text: 'Room reset', color: 'text-amber-400' });
+          setSyncStatus({ text: 'Boards reset', color: 'text-amber-400' });
+      } catch (error) {
+          handleDatabaseError(error);
+      }
+  };
+
+  const resetRoom = async () => {
+      const confirmed = window.confirm(
+          `Delete all users and sessions from room ${currentRoomId}? This permanently removes every player name, card seed, and stamp from this room.`
+      );
+      if (!confirmed || !dbRef.current) return;
+
+      setSyncStatus({ text: 'Resetting room...', color: 'text-amber-400' });
+      const roomRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}`);
+      try {
+          await set(roomRef, { seed: 'BARRENS2026', players: {} });
+          setRoomData({ seed: 'BARRENS2026', players: {} });
+          setActiveViewPlayerId(myPlayerId);
+          setSyncStatus({ text: 'All room users removed', color: 'text-amber-400' });
       } catch (error) {
           handleDatabaseError(error);
       }
@@ -586,6 +604,9 @@ export default function App() {
                             </button>
                             <button onClick={sharePlayerSessionLink} className="text-amber-400 hover:underline flex items-center gap-1">
                                 <i className="fa-solid fa-link"></i> Link This Player
+                            </button>
+                            <button onClick={resetBoard} className="text-amber-400 hover:text-amber-300 hover:underline flex items-center gap-1">
+                                <i className="fa-solid fa-rotate"></i> Reset Board
                             </button>
                             <button onClick={resetRoom} className="text-red-400 hover:text-red-300 hover:underline flex items-center gap-1">
                                 <i className="fa-solid fa-trash-can"></i> Reset Room
