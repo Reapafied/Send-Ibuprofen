@@ -179,10 +179,10 @@
             </svg>
         </div>
         <h2 class="text-lg md:text-xl font-warcraft text-red-500 font-bold tracking-widest uppercase mb-1">
-            Leveling Bingo
+            WoW: Forever Horde Leveling Challenge
         </h2>
         <p class="text-xs md:text-sm text-gray-400 max-w-2xl mx-auto no-print">
-            First to complete a Bingo wins a $50 Steam gift card
+            Multi-player leveling bingo for launch week! Track up to 10+ players live, sync card layouts using shared seeds, or print custom cards for your guild.
         </p>
     </header>
 
@@ -1042,5 +1042,40 @@
             initApp();
         };
     </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Live Database Updates</title>
+</head>
+<body>
+  <h1>Realtime Updates</h1>
+  <div id="live-content">Waiting for updates...</div>
+
+  <!-- Include Firebase SDKs via your preferred CDN or bundler -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // Your Firebase project configuration
+    const firebaseConfig = {
+      databaseURL: "https://send-ibuprofen-bingo-default-rtdb.firebaseio.com"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Reference the database path you want to watch
+    const livePathRef = ref(db, 'updates/message');
+
+    // Automatically trigger whenever data at this path changes
+    onValue(livePathRef, (snapshot) => {
+      const data = snapshot.val();
+      document.getElementById("live-content").innerText = data || "No data available";
+    });
+  </script>
 </body>
 </html>
