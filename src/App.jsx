@@ -133,28 +133,32 @@ export default function App() {
       setCurrentRoomId(roomId);
 
       const roomNodeRef = ref(database, `wow_bingo_rooms/${roomId}`);
+      let receivedInitialSnapshot = false;
       return onValue(roomNodeRef, (snapshot) => {
+          const isInitialSnapshot = !receivedInitialSnapshot;
+          receivedInitialSnapshot = true;
           const val = snapshot.val();
           if (val) {
-              setRoomData(val);
+              setRoomData({ ...val, players: val.players || {} });
               setSyncStatus({ text: 'Connected', color: 'text-amber-400' });
               const savedPlayer = val.players?.[myPlayerId];
               if (savedPlayer?.name && savedPlayer.name !== myPlayerName) {
                   setMyPlayerName(savedPlayer.name);
                   localStorage.setItem('wow_bingo_user_name', savedPlayer.name);
               }
-              if (!val.players?.[myPlayerId]) {
+              if (isInitialSnapshot && !val.players?.[myPlayerId]) {
                   registerUserInRoom(roomId, database);
               }
           } else {
               update(roomNodeRef, { seed: 'BARRENS2026' }).catch(handleDatabaseError);
+              registerUserInRoom(roomId, database);
           }
       }, handleDatabaseError);
   };
 
   const registerUserInRoom = (roomId, database) => {
       const playerRef = ref(database, `wow_bingo_rooms/${roomId}/players/${myPlayerId}`);
-      set(playerRef, { id: myPlayerId, name: myPlayerName, stamps: { 12: true } })
+      set(playerRef, { id: myPlayerId, name: myPlayerName, seed: 'BARRENS2026', stamps: { 12: true } })
           .catch(handleDatabaseError);
   };
 
@@ -208,8 +212,8 @@ export default function App() {
       };
   };
 
-  const generateCardItems = (seed, playerUniqueKey) => {
-      const rng = seededRandom(seed + '_' + playerUniqueKey);
+  const generateCardItems = (seed) => {
+      const rng = seededRandom(seed);
       let poolCopy = [...masterPool];
       let shuffled = [];
       while (poolCopy.length > 0) {
@@ -283,13 +287,20 @@ export default function App() {
       }
   };
 
-  const updateCardSeed = (newSeed) => {
-      const seed = newSeed || 'BARRENS2026';
-      setRoomData((current) => ({ ...current, seed }));
-      if (dbRef.current) {
-          const roomRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}`);
-          update(roomRef, { seed }).catch(handleDatabaseError);
-      }
+  const updateCardSeed = (seed) => {
+      const existingPlayer = roomData.players?.[myPlayerId] || {
+          id: myPlayerId,
+          name: myPlayerName,
+          stamps: { 12: true }
+      };
+      const updatedPlayer = { ...existingPlayer, seed };
+      setRoomData((current) => ({
+          ...current,
+          players: { ...(current.players || {}), [myPlayerId]: updatedPlayer }
+      }));
+      if (!dbRef.current) return;
+      const playerRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}/players/${myPlayerId}`);
+      update(playerRef, updatedPlayer).catch(handleDatabaseError);
   };
 
   const randomizeActiveCard = () => {
@@ -312,11 +323,29 @@ export default function App() {
       alert("Player session link copied to clipboard. Anyone with this link can use this player's card:\n" + shareableUrl);
   };
 
+  const resetRoom = async () => {
+      const confirmed = window.confirm(
+          `Reset room ${currentRoomId}? This permanently clears every player's session and stamps in this room.`
+      );
+      if (!confirmed || !dbRef.current) return;
+
+      setSyncStatus({ text: 'Resetting room...', color: 'text-amber-400' });
+      const roomRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}`);
+      try {
+          await set(roomRef, { seed: 'BARRENS2026' });
+          setActiveViewPlayerId(myPlayerId);
+          setSyncStatus({ text: 'Room cleared', color: 'text-amber-400' });
+      } catch (error) {
+          handleDatabaseError(error);
+      }
+  };
+
   const allPlayers = Object.values(roomData.players || {});
   const displayPlayerId = activeViewPlayerId || myPlayerId;
   const activeViewPlayer = roomData.players[displayPlayerId] || { id: myPlayerId, name: myPlayerName, stamps: { 12: true } };
 
-  const activeItems = generateCardItems(roomData.seed || 'BARRENS2026', activeViewPlayer.id);
+    const activeSeed = activeViewPlayer.seed ?? roomData.seed ?? 'BARRENS2026';
+    const activeItems = generateCardItems(activeSeed);
   const activeStamps = activeViewPlayer.stamps || {};
   const { winCount: activeWins, winningIndices } = checkBingoLines(activeStamps);
   const stampedTotal = Object.keys(activeStamps).filter(k => activeStamps[k]).length;
@@ -411,7 +440,8 @@ export default function App() {
                             <span className="text-gray-400">Card Seed:</span>
                             <input
                                 type="text"
-                                value={roomData.seed || 'BARRENS2026'}
+                                value={activeSeed}
+                                disabled={!isEditingOwnCard}
                                 onChange={(e) => updateCardSeed(e.target.value)}
                                 className="ml-1 bg-[#0e0b0b] border border-[#3f2d2d] text-amber-300 font-mono px-2 py-1 rounded text-xs w-28 text-center"
                             />
@@ -420,7 +450,7 @@ export default function App() {
                             <span className="text-gray-400">Stamped:</span>
                             <span className="font-bold text-amber-400 text-sm ml-1">{stampedTotal}/25</span>
                         </div>
-                        <button onClick={randomizeActiveCard} className="px-2.5 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded border border-gray-600 text-xs flex items-center gap-1">
+                        <button onClick={randomizeActiveCard} disabled={!isEditingOwnCard} className="px-2.5 py-1 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded border border-gray-600 text-xs flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed">
                             <i className="fa-solid fa-dice"></i> Shuffle
                         </button>
                     </div>
@@ -512,6 +542,9 @@ export default function App() {
                             </button>
                             <button onClick={sharePlayerSessionLink} className="text-amber-400 hover:underline flex items-center gap-1">
                                 <i className="fa-solid fa-link"></i> Link This Player
+                            </button>
+                            <button onClick={resetRoom} className="text-red-400 hover:text-red-300 hover:underline flex items-center gap-1">
+                                <i className="fa-solid fa-trash-can"></i> Reset Room
                             </button>
                         </div>
                     </div>
