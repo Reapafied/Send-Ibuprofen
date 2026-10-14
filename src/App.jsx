@@ -41,33 +41,42 @@ const WIN_PATTERNS = [
 
 export default function App() {
   const [currentRoomId, setCurrentRoomId] = useState('GLOBAL');
-  const [inputRoomId, setInputRoomId] = useState('GLOBAL');
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [masterPool, setMasterPool] = useState(DEFAULT_CHALLENGES);
   
-  const [roomData, setRoomData] = useState({
-      seed: 'BARRENS2026',
-      players: {
-          'p_default': {
-              id: 'p_default',
-              name: 'Mankrik',
-              stamps: { 12: true }
-          }
-      }
+  // Local identity state
+  const [myPlayerId, setMyPlayerId] = useState(() => {
+      return localStorage.getItem('wow_bingo_user_id') || 'p_' + Math.random().toString(36).substring(2, 9);
+  });
+  const [myPlayerName, setMyPlayerName] = useState(() => {
+      return localStorage.getItem('wow_bingo_user_name') || 'Mankrik';
   });
 
-  const [activePlayerId, setActivePlayerId] = useState('p_default');
-  const [syncStatus, setSyncStatus] = useState({ text: 'Local Sync', color: 'text-emerald-400' });
+  const [roomData, setRoomData] = useState({
+      seed: 'BARRENS2026',
+      players: {}
+  });
+
+  const [activeViewPlayerId, setActiveViewPlayerId] = useState('');
+  const [syncStatus, setSyncStatus] = useState({ text: 'Connecting...', color: 'text-amber-400' });
   
   const [activeModal, setActiveModal] = useState(null);
-  const [firebaseConfigInput, setFirebaseConfigInput] = useState('');
   const [customPoolText, setCustomPoolText] = useState(DEFAULT_CHALLENGES.join('\n'));
-  const [printOption, setPrintOption] = useState('active');
 
   const dbRef = useRef(null);
 
-  // Auto-connect Firebase from GitHub Actions secret or environment variables
+  // Initialize or update self in local storage
   useEffect(() => {
+      localStorage.setItem('wow_bingo_user_id', myPlayerId);
+      localStorage.setItem('wow_bingo_user_name', myPlayerName);
+  }, [myPlayerId, myPlayerName]);
+
+  // Read URL params and auto-connect to Firebase Secret
+  useEffect(() => {
+      const params = new URLSearchParams(window.location.search);
+      const urlRoom = params.get('room')?.toUpperCase() || 'GLOBAL';
+      setCurrentRoomId(urlRoom);
+
       const envConfig = import.meta.env.VITE_FIREBASE_CONFIG;
       if (envConfig) {
           try {
@@ -76,26 +85,59 @@ export default function App() {
               const database = getDatabase(app);
               dbRef.current = database;
               setSyncStatus({ text: 'Firebase Connected', color: 'text-amber-400' });
-              subscribeToRoom(currentRoomId, database);
+              subscribeToRoom(urlRoom, database);
           } catch (err) {
-              console.error("Auto Firebase initialization failed:", err);
+              console.error("Firebase connection error:", err);
+              setSyncStatus({ text: 'Config Error', color: 'text-red-500' });
           }
+      } else {
+          setSyncStatus({ text: 'No Secret Config Found', color: 'text-red-400' });
       }
   }, []);
 
-  // Check URL params for room code on mount
-  useEffect(() => {
-      const params = new URLSearchParams(window.location.search);
-      const roomParam = params.get('room');
-      if (roomParam) {
-          const formattedRoom = roomParam.toUpperCase();
-          setCurrentRoomId(formattedRoom);
-          setInputRoomId(formattedRoom);
-          if (dbRef.current) {
-              subscribeToRoom(formattedRoom, dbRef.current);
+  const subscribeToRoom = (roomId, database = dbRef.current) => {
+      setCurrentRoomId(roomId);
+      if (!database) return;
+
+      const roomNodeRef = ref(database, `wow_bingo_rooms/${roomId}`);
+      onValue(roomNodeRef, (snapshot) => {
+          const val = snapshot.val();
+          if (val) {
+              setRoomData(val);
+              // Ensure current user exists in room
+              if (!val.players?.[myPlayerId]) {
+                  registerUserInRoom(roomId, database, val);
+              }
+          } else {
+              // Initialize room if new
+              const initialData = {
+                  seed: 'BARRENS2026',
+                  players: {
+                      [myPlayerId]: { id: myPlayerId, name: myPlayerName, stamps: { 12: true } }
+                  }
+              };
+              set(roomNodeRef, initialData);
+              setRoomData(initialData);
           }
+      });
+  };
+
+  const registerUserInRoom = (roomId, database, existingRoomData) => {
+      const updatedPlayers = {
+          ...(existingRoomData.players || {}),
+          [myPlayerId]: { id: myPlayerId, name: myPlayerName, stamps: { 12: true } }
+      };
+      const roomNodeRef = ref(database, `wow_bingo_rooms/${roomId}/players`);
+      set(roomNodeRef, updatedPlayers);
+  };
+
+  const pushRoomUpdate = (newRoomData) => {
+      setRoomData(newRoomData);
+      if (dbRef.current) {
+          const roomNodeRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}`);
+          set(roomNodeRef, newRoomData);
       }
-  }, []);
+  };
 
   const playSound = (type) => {
       if (!audioEnabled) return;
@@ -175,48 +217,12 @@ export default function App() {
       return { winCount, winningIndices };
   };
 
-  const saveFirebaseConfig = () => {
-      try {
-          const config = JSON.parse(firebaseConfigInput);
-          const app = !getApps().length ? initializeApp(config) : getApps()[0];
-          const database = getDatabase(app);
-          dbRef.current = database;
-          setSyncStatus({ text: 'Firebase Connected', color: 'text-amber-400' });
-          alert("Firebase Connected Successfully!");
-          setActiveModal(null);
-          subscribeToRoom(currentRoomId, database);
-      } catch (err) {
-          alert("Invalid Firebase Configuration JSON: " + err.message);
-      }
-  };
+  const toggleSquareStamp = (targetPlayerId, squareIndex) => {
+      // Players can only stamp their own card
+      if (targetPlayerId !== myPlayerId || squareIndex === 12) return;
 
-  const subscribeToRoom = (roomId, database = dbRef.current) => {
-      setCurrentRoomId(roomId);
-      if (!database) return;
-      const roomNodeRef = ref(database, `wow_bingo_rooms/${roomId}`);
-      onValue(roomNodeRef, (snapshot) => {
-          const val = snapshot.val();
-          if (val) {
-              setRoomData(val);
-          } else {
-              set(roomNodeRef, roomData);
-          }
-      });
-  };
-
-  const pushRoomUpdate = (newRoomData) => {
-      setRoomData(newRoomData);
-      if (dbRef.current) {
-          const roomNodeRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}`);
-          set(roomNodeRef, newRoomData);
-      }
-  };
-
-  const toggleSquareStamp = (playerId, squareIndex) => {
-      if (squareIndex === 12) return;
       const updatedPlayers = { ...roomData.players };
-      const player = updatedPlayers[playerId];
-      if (!player) return;
+      const player = updatedPlayers[myPlayerId] || { id: myPlayerId, name: myPlayerName, stamps: { 12: true } };
 
       const stamps = { ...(player.stamps || {}) };
       const wasStamped = !!stamps[squareIndex];
@@ -226,10 +232,10 @@ export default function App() {
       const newWins = checkBingoLines(stamps).winCount;
 
       player.stamps = stamps;
-      updatedPlayers[playerId] = player;
+      player.name = myPlayerName;
+      updatedPlayers[myPlayerId] = player;
 
-      const newRoomData = { ...roomData, players: updatedPlayers };
-      pushRoomUpdate(newRoomData);
+      pushRoomUpdate({ ...roomData, players: updatedPlayers });
 
       if (!wasStamped) {
           playSound('stamp');
@@ -239,16 +245,19 @@ export default function App() {
       }
   };
 
-  const addNewPlayerPrompt = () => {
-      const name = prompt("Enter new player or character name:");
-      if (!name) return;
-      const id = 'p_' + Math.random().toString(36).substring(2, 9);
-      const updatedPlayers = {
-          ...roomData.players,
-          [id]: { id, name, stamps: { 12: true } }
-      };
-      pushRoomUpdate({ ...roomData, players: updatedPlayers });
-      setActivePlayerId(id);
+  const changeMyNamePrompt = () => {
+      const newName = prompt("Enter your character / player name:", myPlayerName);
+      if (!newName || !newName.trim()) return;
+      const cleanName = newName.trim();
+      setMyPlayerName(cleanName);
+
+      if (roomData.players[myPlayerId]) {
+          const updatedPlayers = {
+              ...roomData.players,
+              [myPlayerId]: { ...roomData.players[myPlayerId], name: cleanName }
+          };
+          pushRoomUpdate({ ...roomData, players: updatedPlayers });
+      }
   };
 
   const updateCardSeed = (newSeed) => {
@@ -266,13 +275,18 @@ export default function App() {
       alert("Room link copied to clipboard: " + url);
   };
 
-  const activePlayer = roomData.players[activePlayerId] || Object.values(roomData.players)[0] || { id: 'p_default', name: 'Mankrik', stamps: { 12: true } };
-  const activeItems = generateCardItems(roomData.seed || 'BARRENS2026', activePlayer.id);
-  const activeStamps = activePlayer.stamps || {};
+  // Determine active displayed board
+  const allPlayers = Object.values(roomData.players || {});
+  const displayPlayerId = activeViewPlayerId || myPlayerId;
+  const activeViewPlayer = roomData.players[displayPlayerId] || { id: myPlayerId, name: myPlayerName, stamps: { 12: true } };
+
+  const activeItems = generateCardItems(roomData.seed || 'BARRENS2026', activeViewPlayer.id);
+  const activeStamps = activeViewPlayer.stamps || {};
   const { winCount: activeWins, winningIndices } = checkBingoLines(activeStamps);
   const stampedTotal = Object.keys(activeStamps).filter(k => activeStamps[k]).length;
+  const isEditingOwnCard = activeViewPlayer.id === myPlayerId;
 
-  const sortedPlayers = Object.values(roomData.players || {}).sort((a, b) => {
+  const sortedPlayers = [...allPlayers].sort((a, b) => {
       const winsA = checkBingoLines(a.stamps || {}).winCount;
       const winsB = checkBingoLines(b.stamps || {}).winCount;
       if (winsB !== winsA) return winsB - winsA;
@@ -302,8 +316,8 @@ export default function App() {
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2">
-                    <button onClick={() => setActiveModal('room')} className="px-3 py-1.5 bg-[#8b0000] hover:bg-red-600 text-white rounded-lg text-xs font-bold border border-red-500/50 flex items-center gap-1.5">
-                        <i className="fa-solid fa-door-open"></i> Rooms & Sync
+                    <button onClick={changeMyNamePrompt} className="px-3 py-1.5 bg-[#8b0000] hover:bg-red-600 text-white rounded-lg text-xs font-bold border border-red-500/50 flex items-center gap-1.5">
+                        <i className="fa-solid fa-user"></i> Identity: <span className="text-amber-300">{myPlayerName}</span>
                     </button>
                     <button onClick={() => setActiveModal('pool')} className="px-3 py-1.5 bg-gray-800 hover:bg-gray-700 text-gray-200 rounded-lg text-xs font-semibold border border-gray-600/40 flex items-center gap-1.5">
                         <i className="fa-solid fa-list-check text-amber-500"></i> Edit Pool
@@ -320,36 +334,36 @@ export default function App() {
 
         <main className="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
             <section className="lg:col-span-3 flex flex-col gap-4">
+                {/* PLAYER BOARD SELECTOR TABS */}
                 <div className="no-print bg-[#1a1414] p-2 rounded-xl border border-[#3f2d2d] flex items-center justify-between gap-2 overflow-x-auto">
                     <div className="flex items-center gap-2 overflow-x-auto py-1">
-                        {Object.values(roomData.players || {}).map(player => {
-                            const isActive = player.id === activePlayer.id;
+                        {allPlayers.map(player => {
+                            const isSelected = player.id === activeViewPlayer.id;
+                            const isMe = player.id === myPlayerId;
                             const { winCount } = checkBingoLines(player.stamps || {});
                             return (
                                 <button
                                     key={player.id}
-                                    onClick={() => setActivePlayerId(player.id)}
+                                    onClick={() => setActiveViewPlayerId(player.id)}
                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-2 border whitespace-nowrap ${
-                                        isActive ? 'bg-[#8b0000] text-white border-red-500 shadow-md' : 'bg-[#0e0b0b] text-gray-400 border-[#3f2d2d] hover:bg-gray-800'
+                                        isSelected ? 'bg-[#8b0000] text-white border-red-500 shadow-md' : 'bg-[#0e0b0b] text-gray-400 border-[#3f2d2d] hover:bg-gray-800'
                                     }`}
                                 >
                                     <i className="fa-solid fa-user text-[10px]"></i>
-                                    <span>{player.name}</span>
+                                    <span>{player.name} {isMe ? '(You)' : ''}</span>
                                     {winCount > 0 && <span className="bg-amber-400 text-black px-1.5 py-0.2 rounded-full text-[10px] font-black">{winCount} BINGO</span>}
                                 </button>
                             );
                         })}
                     </div>
-                    <button onClick={addNewPlayerPrompt} className="px-3 py-1.5 bg-green-900/80 hover:bg-green-800 text-green-200 rounded-lg text-xs font-bold whitespace-nowrap border border-green-700/50 flex items-center gap-1">
-                        <i className="fa-solid fa-user-plus"></i> Add Player
-                    </button>
                 </div>
 
+                {/* BOARD HEADER */}
                 <div className="no-print bg-[#1a1414] p-4 rounded-xl border border-[#3f2d2d] flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <div className="text-amber-400 font-['Cinzel'] text-2xl font-bold flex items-center gap-2">
                             <i className="fa-solid fa-shield-halved text-red-500"></i>
-                            <span>{activePlayer.name}'s Card</span>
+                            <span>{activeViewPlayer.name}'s Card {isEditingOwnCard ? '(Your Board)' : '(Viewing)'}</span>
                         </div>
                         {activeWins > 0 && (
                             <span className="px-3 py-0.5 bg-amber-500 text-black font-black text-xs rounded-full uppercase tracking-wider bingo-glow">
@@ -378,6 +392,7 @@ export default function App() {
                     </div>
                 </div>
 
+                {/* BINGO GRID */}
                 <div className="bg-[#1a1414] p-3 md:p-5 rounded-2xl border-2 border-[#3f2d2d] shadow-2xl relative">
                     <div className="grid grid-cols-5 gap-1.5 md:gap-3 mb-2 md:mb-3 text-center font-['Cinzel'] font-extrabold text-lg md:text-2xl text-amber-500 tracking-widest">
                         <div className="py-1 bg-[#0e0b0b] rounded border border-red-950/40">B</div>
@@ -396,8 +411,10 @@ export default function App() {
                             return (
                                 <div
                                     key={idx}
-                                    onClick={() => toggleSquareStamp(activePlayer.id, idx)}
-                                    className={`bingo-square relative p-2 md:p-3 rounded-xl border flex flex-col justify-between items-center text-center cursor-pointer transition select-none min-h-[90px] md:min-h-[115px] ${
+                                    onClick={() => toggleSquareStamp(activeViewPlayer.id, idx)}
+                                    className={`bingo-square relative p-2 md:p-3 rounded-xl border flex flex-col justify-between items-center text-center select-none min-h-[90px] md:min-h-[115px] ${
+                                        isEditingOwnCard ? 'cursor-pointer' : 'cursor-default'
+                                    } ${
                                         isWinningSquare
                                             ? 'bg-gradient-to-b from-amber-950/80 to-red-950/80 border-amber-500 shadow-lg font-bold'
                                             : isStamped
@@ -438,12 +455,13 @@ export default function App() {
                             const stamps = player.stamps || {};
                             const count = Object.keys(stamps).filter(k => stamps[k]).length;
                             const { winCount } = checkBingoLines(stamps);
+                            const isMe = player.id === myPlayerId;
                             return (
-                                <div key={player.id} onClick={() => setActivePlayerId(player.id)} className={`p-3 rounded-lg border cursor-pointer transition flex items-center justify-between ${player.id === activePlayer.id ? 'bg-red-950/40 border-red-500' : 'bg-[#0e0b0b] border-[#3f2d2d] hover:bg-gray-800'}`}>
+                                <div key={player.id} onClick={() => setActiveViewPlayerId(player.id)} className={`p-3 rounded-lg border cursor-pointer transition flex items-center justify-between ${player.id === activeViewPlayer.id ? 'bg-red-950/40 border-red-500' : 'bg-[#0e0b0b] border-[#3f2d2d] hover:bg-gray-800'}`}>
                                     <div className="flex items-center gap-2.5">
                                         <span className="font-mono text-xs text-amber-500 font-bold">#{rank + 1}</span>
                                         <div>
-                                            <div className="text-xs font-bold text-gray-200">{player.name}</div>
+                                            <div className="text-xs font-bold text-gray-200">{player.name} {isMe ? '(You)' : ''}</div>
                                             <div className="text-[10px] text-gray-400">{count}/25 Stamped</div>
                                         </div>
                                     </div>
@@ -460,61 +478,8 @@ export default function App() {
                         </button>
                     </div>
                 </div>
-
-                <div className="bg-[#1a1414] p-4 rounded-xl border border-[#3f2d2d] text-xs text-gray-400 space-y-2">
-                    <h3 className="font-bold text-gray-200 font-['Cinzel'] text-sm flex items-center gap-1.5">
-                        <i className="fa-solid fa-circle-info text-amber-500"></i> How Realtime Sync Works
-                    </h3>
-                    <p>1. Connect your <strong>Firebase Realtime DB</strong> in Room settings for instant cross-device updates.</p>
-                    <p>2. Share your room code or URL link with guildmates!</p>
-                    <p>3. Stamping squares updates live on everyone's dashboard.</p>
-                </div>
             </aside>
         </main>
-
-        {activeModal === 'room' && (
-            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-                <div className="bg-[#1a1414] border border-[#3f2d2d] rounded-2xl max-w-lg w-full p-6 shadow-2xl horde-border">
-                    <div className="flex justify-between items-center mb-4 border-b border-[#3f2d2d] pb-3">
-                        <h3 className="text-lg font-bold font-['Cinzel'] text-amber-400 flex items-center gap-2">
-                            <i className="fa-solid fa-network-wired"></i> Room & Firebase Live Sync
-                        </h3>
-                        <button onClick={() => setActiveModal(null)} className="text-gray-400 hover:text-white"><i className="fa-solid fa-xmark text-lg"></i></button>
-                    </div>
-                    <div className="space-y-4 mb-6">
-                        <div>
-                            <label className="block text-xs font-bold uppercase text-gray-400 mb-1">Room Code / ID</label>
-                            <div className="flex gap-2">
-                                <input
-                                    type="text"
-                                    value={inputRoomId}
-                                    onChange={(e) => setInputRoomId(e.target.value.toUpperCase())}
-                                    className="bg-[#0e0b0b] border border-[#3f2d2d] text-amber-300 font-mono px-3 py-2 rounded-lg text-sm w-full font-bold outline-none focus:border-amber-500 uppercase"
-                                />
-                                <button onClick={() => { subscribeToRoom(inputRoomId); setActiveModal(null); }} className="px-4 py-2 bg-[#8b0000] hover:bg-red-600 text-white text-xs font-bold rounded-lg whitespace-nowrap">
-                                    Join / Create
-                                </button>
-                            </div>
-                        </div>
-                        <div className="border-t border-[#3f2d2d] pt-4">
-                            <h4 className="text-xs font-bold uppercase text-amber-400 mb-2">Firebase DB Configuration</h4>
-                            <textarea
-                                rows="4"
-                                value={firebaseConfigInput}
-                                onChange={(e) => setFirebaseConfigInput(e.target.value)}
-                                placeholder='{ "apiKey": "...", "authDomain": "...", "databaseURL": "...", "projectId": "..." }'
-                                className="bg-[#0e0b0b] border border-[#3f2d2d] font-mono text-xs text-gray-300 p-2.5 rounded-lg w-full outline-none focus:border-amber-500"
-                            ></textarea>
-                        </div>
-                    </div>
-                    <div className="flex justify-end gap-2">
-                        <button onClick={saveFirebaseConfig} className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-black text-xs font-bold rounded-lg">
-                            Save Config & Sync
-                        </button>
-                    </div>
-                </div>
-            </div>
-        )}
 
         {activeModal === 'pool' && (
             <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -562,8 +527,8 @@ export default function App() {
                     <div className="space-y-3 mb-6 text-xs text-gray-300">
                         <p>Page formatting strips dark backgrounds for high-contrast ink printing.</p>
                         <label className="flex items-center gap-2 cursor-pointer pt-2">
-                            <input type="radio" name="print-option" checked={printOption === 'active'} onChange={() => setPrintOption('active')} className="accent-amber-500" />
-                            <span>Print Current Active Player Card (<strong className="text-amber-400">{activePlayer.name}</strong>)</span>
+                            <input type="radio" name="print-option" checked readOnly className="accent-amber-500" />
+                            <span>Print Currently Displayed Card (<strong className="text-amber-400">{activeViewPlayer.name}</strong>)</span>
                         </label>
                     </div>
                     <div className="flex justify-end gap-2">
