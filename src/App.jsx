@@ -50,7 +50,12 @@ const WIN_PATTERNS = [
 ];
 
 export default function App() {
-  const [currentRoomId, setCurrentRoomId] = useState('GLOBAL');
+    const [currentRoomId, setCurrentRoomId] = useState(() =>
+            new URLSearchParams(window.location.search).get('room')?.toUpperCase() || 'GLOBAL'
+    );
+    const [roomCodeDraft, setRoomCodeDraft] = useState(() =>
+            new URLSearchParams(window.location.search).get('room')?.toUpperCase() || 'GLOBAL'
+    );
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [masterPool, setMasterPool] = useState(DEFAULT_CHALLENGES);
   
@@ -131,6 +136,7 @@ export default function App() {
   const subscribeToRoom = (roomId, database = dbRef.current) => {
       if (!database) return;
       setCurrentRoomId(roomId);
+      setRoomCodeDraft(roomId);
 
       const roomNodeRef = ref(database, `wow_bingo_rooms/${roomId}`);
       let receivedInitialSnapshot = false;
@@ -325,19 +331,43 @@ export default function App() {
 
   const resetRoom = async () => {
       const confirmed = window.confirm(
-          `Reset room ${currentRoomId}? This permanently clears every player's session and stamps in this room.`
+          `Reset room ${currentRoomId}? This clears every card's stamps and resets card seeds, but keeps player names and IDs.`
       );
       if (!confirmed || !dbRef.current) return;
 
       setSyncStatus({ text: 'Resetting room...', color: 'text-amber-400' });
       const roomRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}`);
+      const resetPlayers = Object.fromEntries(
+          Object.entries(roomData.players || {}).map(([playerId, player]) => [playerId, {
+              ...player,
+              id: player.id || playerId,
+              name: player.name || 'Mankrik',
+              seed: 'BARRENS2026',
+              stamps: { 12: true }
+          }])
+      );
       try {
-          await set(roomRef, { seed: 'BARRENS2026' });
+          await set(roomRef, { seed: 'BARRENS2026', players: resetPlayers });
+          setRoomData({ seed: 'BARRENS2026', players: resetPlayers });
           setActiveViewPlayerId(myPlayerId);
-          setSyncStatus({ text: 'Room cleared', color: 'text-amber-400' });
+          setSyncStatus({ text: 'Room reset', color: 'text-amber-400' });
       } catch (error) {
           handleDatabaseError(error);
       }
+  };
+
+  const changeRoom = (event) => {
+      event.preventDefault();
+      const nextRoomId = roomCodeDraft.trim().toUpperCase();
+      if (!/^[A-Z0-9_-]{1,32}$/.test(nextRoomId)) {
+          setSyncStatus({ text: 'Room code: use 1-32 letters, numbers, _ or -', color: 'text-red-400' });
+          return;
+      }
+
+      const nextUrl = new URL(window.location.href);
+      nextUrl.searchParams.set('room', nextRoomId);
+      nextUrl.searchParams.delete('player');
+      window.location.assign(nextUrl.toString());
   };
 
   const allPlayers = Object.values(roomData.players || {});
@@ -374,7 +404,21 @@ export default function App() {
                             <span className="text-xs font-sans px-2 py-0.5 bg-red-950 text-red-300 rounded border border-red-800 uppercase tracking-widest font-semibold">WoW Horde Live</span>
                         </h1>
                         <div className="flex items-center gap-2 text-xs text-gray-400">
-                            <span>Room Code: <strong className="text-amber-300 font-mono">{currentRoomId}</strong></span>
+                            <form onSubmit={changeRoom} className="flex items-center gap-1.5">
+                                <label htmlFor="room-code" className="text-gray-400">Room:</label>
+                                <input
+                                    id="room-code"
+                                    type="text"
+                                    value={roomCodeDraft}
+                                    onChange={(event) => setRoomCodeDraft(event.target.value)}
+                                    aria-label="Room code"
+                                    maxLength={32}
+                                    className="w-28 bg-[#0e0b0b] border border-[#3f2d2d] text-amber-300 font-mono px-2 py-1 rounded text-xs text-center uppercase"
+                                />
+                                <button type="submit" className="px-2 py-1 bg-gray-800 hover:bg-gray-700 text-gray-200 border border-gray-600 rounded text-xs font-semibold">
+                                    Go
+                                </button>
+                            </form>
                             <span className={`flex items-center gap-1 ${syncStatus.color}`}><i className="fa-solid fa-signal text-[10px]"></i> {syncStatus.text}</span>
                         </div>
                     </div>
