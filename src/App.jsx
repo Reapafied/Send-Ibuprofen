@@ -255,7 +255,13 @@ export default function App() {
   const toggleSquareStamp = (targetPlayerId, squareIndex) => {
       if (targetPlayerId !== myPlayerId || squareIndex === 12) return;
 
-      const player = roomData.players?.[myPlayerId] || { id: myPlayerId, name: myPlayerName, stamps: { 12: true } };
+      const existingPlayer = roomData.players?.[myPlayerId];
+      const player = existingPlayer || {
+          id: myPlayerId,
+          name: myPlayerName,
+          seed: 'BARRENS2026',
+          stamps: { 12: true }
+      };
       const stamps = { ...(player.stamps || {}) };
       const wasStamped = !!stamps[squareIndex];
       if (wasStamped) {
@@ -281,10 +287,13 @@ export default function App() {
 
       if (dbRef.current) {
           const playerRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}/players/${myPlayerId}`);
-          update(playerRef, {
-              name: myPlayerName,
-              [`stamps/${squareIndex}`]: wasStamped ? null : true
-          }).catch(handleDatabaseError);
+          const write = existingPlayer
+              ? update(playerRef, {
+                  name: myPlayerName,
+                  [`stamps/${squareIndex}`]: wasStamped ? null : true
+              })
+              : set(playerRef, { ...player, name: myPlayerName, stamps });
+          write.catch(handleDatabaseError);
       }
 
       if (!wasStamped) {
