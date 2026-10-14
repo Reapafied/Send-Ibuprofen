@@ -44,8 +44,7 @@ export default function App() {
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [masterPool, setMasterPool] = useState(DEFAULT_CHALLENGES);
   
-  // Local identity state
-  const [myPlayerId, setMyPlayerId] = useState(() => {
+  const [myPlayerId] = useState(() => {
       return localStorage.getItem('wow_bingo_user_id') || 'p_' + Math.random().toString(36).substring(2, 9);
   });
   const [myPlayerName, setMyPlayerName] = useState(() => {
@@ -65,30 +64,50 @@ export default function App() {
 
   const dbRef = useRef(null);
 
-  // Initialize or update self in local storage
   useEffect(() => {
       localStorage.setItem('wow_bingo_user_id', myPlayerId);
       localStorage.setItem('wow_bingo_user_name', myPlayerName);
   }, [myPlayerId, myPlayerName]);
 
- // Read URL params and auto-connect to Firebase Secret
+  // Construct Firebase Config Object from env
+  const getFirebaseConfig = () => {
+      if (import.meta.env.VITE_FIREBASE_API_KEY) {
+          return {
+              apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+              authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+              databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+              projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+              storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+              messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+              appId: import.meta.env.VITE_FIREBASE_APP_ID,
+          };
+      }
+      if (import.meta.env.VITE_FIREBASE_CONFIG) {
+          try {
+              return typeof import.meta.env.VITE_FIREBASE_CONFIG === 'string'
+                  ? JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG)
+                  : import.meta.env.VITE_FIREBASE_CONFIG;
+          } catch (e) { return null; }
+      }
+      return null;
+  };
+
   useEffect(() => {
       const params = new URLSearchParams(window.location.search);
       const urlRoom = params.get('room')?.toUpperCase() || 'GLOBAL';
       setCurrentRoomId(urlRoom);
 
-      const envConfig = import.meta.env.VITE_FIREBASE_CONFIG;
-      
-      if (envConfig) {
+      const config = getFirebaseConfig();
+
+      if (config && config.databaseURL) {
           try {
-              const config = typeof envConfig === 'string' ? JSON.parse(envConfig) : envConfig;
               const app = !getApps().length ? initializeApp(config) : getApps()[0];
               const database = getDatabase(app);
               dbRef.current = database;
               setSyncStatus({ text: 'Firebase Connected', color: 'text-amber-400' });
               subscribeToRoom(urlRoom, database);
           } catch (err) {
-              console.error("Firebase connection error:", err);
+              console.error("Firebase initialization failed:", err);
               setSyncStatus({ text: 'Config Error', color: 'text-red-500' });
           }
       } else {
@@ -97,20 +116,18 @@ export default function App() {
   }, []);
 
   const subscribeToRoom = (roomId, database = dbRef.current) => {
-      setCurrentRoomId(roomId);
       if (!database) return;
+      setCurrentRoomId(roomId);
 
       const roomNodeRef = ref(database, `wow_bingo_rooms/${roomId}`);
       onValue(roomNodeRef, (snapshot) => {
           const val = snapshot.val();
           if (val) {
               setRoomData(val);
-              // Ensure current user exists in room
               if (!val.players?.[myPlayerId]) {
                   registerUserInRoom(roomId, database, val);
               }
           } else {
-              // Initialize room if new
               const initialData = {
                   seed: 'BARRENS2026',
                   players: {
@@ -128,8 +145,8 @@ export default function App() {
           ...(existingRoomData.players || {}),
           [myPlayerId]: { id: myPlayerId, name: myPlayerName, stamps: { 12: true } }
       };
-      const roomNodeRef = ref(database, `wow_bingo_rooms/${roomId}/players`);
-      set(roomNodeRef, updatedPlayers);
+      const playersRef = ref(database, `wow_bingo_rooms/${roomId}/players`);
+      set(playersRef, updatedPlayers);
   };
 
   const pushRoomUpdate = (newRoomData) => {
@@ -219,7 +236,6 @@ export default function App() {
   };
 
   const toggleSquareStamp = (targetPlayerId, squareIndex) => {
-      // Players can only stamp their own card
       if (targetPlayerId !== myPlayerId || squareIndex === 12) return;
 
       const updatedPlayers = { ...roomData.players };
@@ -271,12 +287,12 @@ export default function App() {
   };
 
   const shareRoomLink = () => {
-      const url = `${window.location.origin}${window.location.pathname}?room=${currentRoomId}`;
-      navigator.clipboard.writeText(url);
-      alert("Room link copied to clipboard: " + url);
+      const baseUrl = window.location.href.split('?')[0];
+      const shareableUrl = `${baseUrl}?room=${encodeURIComponent(currentRoomId)}`;
+      navigator.clipboard.writeText(shareableUrl);
+      alert("Room link copied to clipboard:\n" + shareableUrl);
   };
 
-  // Determine active displayed board
   const allPlayers = Object.values(roomData.players || {});
   const displayPlayerId = activeViewPlayerId || myPlayerId;
   const activeViewPlayer = roomData.players[displayPlayerId] || { id: myPlayerId, name: myPlayerName, stamps: { 12: true } };
@@ -335,7 +351,6 @@ export default function App() {
 
         <main className="flex-grow max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-4 gap-6">
             <section className="lg:col-span-3 flex flex-col gap-4">
-                {/* PLAYER BOARD SELECTOR TABS */}
                 <div className="no-print bg-[#1a1414] p-2 rounded-xl border border-[#3f2d2d] flex items-center justify-between gap-2 overflow-x-auto">
                     <div className="flex items-center gap-2 overflow-x-auto py-1">
                         {allPlayers.map(player => {
@@ -359,7 +374,6 @@ export default function App() {
                     </div>
                 </div>
 
-                {/* BOARD HEADER */}
                 <div className="no-print bg-[#1a1414] p-4 rounded-xl border border-[#3f2d2d] flex flex-wrap items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                         <div className="text-amber-400 font-['Cinzel'] text-2xl font-bold flex items-center gap-2">
@@ -393,7 +407,6 @@ export default function App() {
                     </div>
                 </div>
 
-                {/* BINGO GRID */}
                 <div className="bg-[#1a1414] p-3 md:p-5 rounded-2xl border-2 border-[#3f2d2d] shadow-2xl relative">
                     <div className="grid grid-cols-5 gap-1.5 md:gap-3 mb-2 md:mb-3 text-center font-['Cinzel'] font-extrabold text-lg md:text-2xl text-amber-500 tracking-widest">
                         <div className="py-1 bg-[#0e0b0b] rounded border border-red-950/40">B</div>
