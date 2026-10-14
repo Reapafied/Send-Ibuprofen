@@ -89,6 +89,12 @@ export default function App() {
   const [customPoolText, setCustomPoolText] = useState(DEFAULT_CHALLENGES.join('\n'));
 
   const dbRef = useRef(null);
+    const previousBingoCountsRef = useRef(null);
+    const audioEnabledRef = useRef(audioEnabled);
+
+    useEffect(() => {
+            audioEnabledRef.current = audioEnabled;
+    }, [audioEnabled]);
 
   // Construct Firebase Config Object from env
   const getFirebaseConfig = () => {
@@ -145,7 +151,25 @@ export default function App() {
           receivedInitialSnapshot = true;
           const val = snapshot.val();
           if (val) {
-              setRoomData({ ...val, players: val.players || {} });
+              const players = val.players || {};
+              const bingoCounts = Object.fromEntries(
+                  Object.entries(players).map(([playerId, player]) => [
+                      playerId,
+                      checkBingoLines(player.stamps || {}).winCount
+                  ])
+              );
+              const previousBingoCounts = previousBingoCountsRef.current;
+              if (previousBingoCounts) {
+                  Object.entries(bingoCounts).forEach(([playerId, winCount]) => {
+                      if (playerId !== myPlayerId &&
+                          previousBingoCounts[playerId] !== undefined &&
+                          winCount > previousBingoCounts[playerId]) {
+                          playSound('opponentBingo');
+                      }
+                  });
+              }
+              previousBingoCountsRef.current = bingoCounts;
+              setRoomData({ ...val, players });
               setSyncStatus({ text: 'Connected', color: 'text-amber-400' });
               const savedPlayer = val.players?.[myPlayerId];
               if (savedPlayer?.name && savedPlayer.name !== myPlayerName) {
@@ -175,35 +199,23 @@ export default function App() {
   };
 
   const playSound = (type) => {
-      if (!audioEnabled) return;
+      if (!audioEnabledRef.current) return;
       try {
-          const ctx = new (window.AudioContext || window.webkitAudioContext)();
-          const osc = ctx.createOscillator();
-          const gain = ctx.createGain();
-          osc.connect(gain);
-          gain.connect(ctx.destination);
-          const now = ctx.currentTime;
+          const soundFiles = {
+              stamp: 'stamp.wav',
+              bingo: 'bingo.wav',
+              opponentBingo: 'opponent-bingo.wav'
+          };
+          const fileName = soundFiles[type];
+          if (!fileName) return;
 
-          if (type === 'stamp') {
-              osc.type = 'sine';
-              osc.frequency.setValueAtTime(180, now);
-              osc.frequency.exponentialRampToValueAtTime(320, now + 0.08);
-              gain.gain.setValueAtTime(0.3, now);
-              gain.gain.linearRampToValueAtTime(0, now + 0.1);
-              osc.start(now);
-              osc.stop(now + 0.1);
-          } else if (type === 'bingo') {
-              osc.type = 'triangle';
-              osc.frequency.setValueAtTime(440, now);
-              osc.frequency.setValueAtTime(554.37, now + 0.12);
-              osc.frequency.setValueAtTime(659.25, now + 0.24);
-              gain.gain.setValueAtTime(0.4, now);
-              gain.gain.linearRampToValueAtTime(0, now + 0.5);
-              osc.start(now);
-              osc.stop(now + 0.5);
-          }
-      } catch (e) {
-          console.warn("Audio Context error:", e);
+          const audio = new Audio(`${import.meta.env.BASE_URL}audio/${fileName}`);
+          audio.volume = 0.75;
+          audio.play().catch((error) => {
+              console.warn('Audio playback was blocked or unavailable:', error);
+          });
+      } catch (error) {
+          console.warn('Audio playback error:', error);
       }
   };
 
