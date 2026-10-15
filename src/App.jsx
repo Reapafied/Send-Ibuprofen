@@ -23,7 +23,7 @@ const DEFAULT_CHALLENGES = [
     "Do all three of the mechanical chicken escorts",
     "Roll a 100 on a dungeon Item NEED roll",
     "Whitness someone Die to fall damage from Thousand Needles or TB Elevators",
-    "Survive a fall with less than 5% HP",
+    "Reach the Dancing Troll Village",
     "Capture a Flag in WSG",
     "Capture or Help defend each point in AB In a single round",
     "Kill a Quest or World elite by kiting it to town guards. Solo.",
