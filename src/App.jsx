@@ -15,8 +15,8 @@ const FIREBASE_CONFIG = {
 const DEFAULT_CHALLENGES = [
     "Stand next to King Anduin Wrynn in Stormwind Keep",
     "Ride the Deeprun Tram and survive",
-    "Rare Hunter: Kill 5 different rare mob spawn in the open world",
-    "Get to the Badlands FP the hard way, Running from Stranglethorn through Blackrock",
+    "Rare Hunter: Kill 10 different rare spawn mobs in the open world. Keep Track!",
+    "Get to the Badlands FP the hard way, Running from Stranglethorn through Blackrock... While flagged",
     "Complete Gnomer clean. No buttpulls no jump skips",
     "Solo a major class quest battle. Example WW Axe elite elemental.",
     "Gain Honored with one of the Centaur clans",
@@ -32,13 +32,13 @@ const DEFAULT_CHALLENGES = [
     "Create a campsite OUTSIDE a town and have at least 5 other players join you",
     "Lose a /roll 100 for a dungeon item by less than 5 points",
     "Save a random player from dying in the open world",
-    "Complete any new dungeon with no deaths",
+    "Complete 3 new dungeons flawless (No deaths No wipes)",
     "Stay flagged anytime you are in Hillsbrad until you complete the Hearcules rod quest. You MUST fight any flagged alliance.",
     "Survive a pull with 3% or less HP",
     "Fish up a junk item or rare fish in enemy territory",
     "Complete 100% of quests within a non starting zone",
-    "Finish Mothers Milk. If you know you know",
-    "As a group. Complete a current level dungeon with everyone wearing vendor whites"
+    "Finish Mothers Milk. Pain",
+    "As a group. Complete a wing of SM while everyone is wearing only vendor whites"
 ];
 
 const WIN_PATTERNS = [
