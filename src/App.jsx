@@ -36,7 +36,7 @@ const DEFAULT_CHALLENGES = [
     "Stay flagged anytime you are in Hillsbrad until you complete the Hearcules rod quest. You MUST fight any flagged alliance.",
     "Kill one of the Patrolling Eite Dragons around the world. Example: Narillasanz",
     "Fish up a junk item or rare fish in enemy territory",
-    "Complete 100% of quests within a non starting zone",
+    "Complete 100% of quests within a non starting zone (Stormwind, Ironforge ect)",
     "Finish Mothers Milk. Pain",
     "As a group. Complete a wing of SM while everyone is wearing only vendor whites"
 ];
