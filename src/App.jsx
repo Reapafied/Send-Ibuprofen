@@ -17,7 +17,7 @@ const DEFAULT_CHALLENGES = [
     "Ride the Deeprun Tram and survive",
     "Rare Hunter: Kill 10 different rare spawn mobs in the open world. Keep Track!",
     "Get to the Badlands FP the hard way, Running from Stranglethorn through Blackrock... While flagged",
-    "Complete Gnomer clean. No buttpulls no jump skips",
+    "Complete at least two of the Alliance dungeons",
     "Solo a major class quest battle. Example WW Axe elite elemental.",
     "Gain Honored with one of the Centaur clans",
     "Do all three of the mechanical chicken escorts",
