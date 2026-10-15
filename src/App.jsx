@@ -27,7 +27,7 @@ const DEFAULT_CHALLENGES = [
     "Capture a Flag in WSG",
     "Capture or Help defend each point in AB In a single round",
     "Kill a Quest or World elite by kiting it to town guards. Solo.",
-    "Witness or post a Chuck Norris joke in Barrens Chat",
+    "I guess this will do. Complete a level 40+ Dungeon with the the full group spec'd dps",
     "Kill Herod while pulling all his trainees at once",
     "Create a campsite OUTSIDE a town and have at least 5 other players join you",
     "Lose a /roll 100 for a dungeon item by less than 5 points",
