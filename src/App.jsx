@@ -18,7 +18,7 @@ const DEFAULT_CHALLENGES = [
     "Rare Hunter: Kill 10 different rare spawn mobs in the open world. Keep Track!",
     "Get to the Badlands FP the hard way, Running from Stranglethorn through Blackrock... While flagged",
     "Complete at least two of the Alliance dungeons",
-    "Solo a major class quest battle. Example WW Axe elite elemental.",
+    "Be the Saviour of Darkshire. Kill Stitches before level 41.",
     "Gain Honored with one of the Centaur clans",
     "Do all three of the mechanical chicken escorts",
     "Roll a 100 on a dungeon Item NEED roll",
