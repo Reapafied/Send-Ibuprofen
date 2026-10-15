@@ -15,7 +15,7 @@ const FIREBASE_CONFIG = {
 const DEFAULT_CHALLENGES = [
     "Stand next to King Anduin Wrynn in Stormwind Keep",
     "Ride the Deeprun Tram and survive",
-    "Ashenvale Rare: Kill Mist howler Or Pinze Raze",
+    "Rare Hunter: Kill 5 different rare mob spawn in the open world",
     "Get to the Badlands FP the hard way, Running from Stranglethorn through Blackrock",
     "Complete Gnomer clean. No buttpulls no jump skips",
     "Solo a major class quest battle. Example WW Axe elite elemental.",
