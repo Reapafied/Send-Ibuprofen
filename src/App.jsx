@@ -25,7 +25,7 @@ const DEFAULT_CHALLENGES = [
     "Gain every bloodshard buff at once in the Barrens",
     "Reach the Dancing Troll Village",
     "Capture a Flag in WSG",
-    "Capture or Help defend each point in AB In a single round",
+    "Capture or defend each point in AB In a single round",
     "Kill a Quest or World elite by kiting it to town guards. Solo.",
     "I guess this will do. Complete a level 40+ Dungeon with the the full group spec'd dps",
     "Kill Herod while pulling all his trainees at once",
