@@ -13,12 +13,12 @@ const FIREBASE_CONFIG = {
 };
 
 const DEFAULT_CHALLENGES = [
-    "Stand next to King Anduin Wrynn in Stormwind Keep",
+    "Savior of Silverpine, Find and Kill an Elite Son of Arugal by level 25",
     "Ride the Deeprun Tram and survive",
     "Rare Hunter: Kill 10 different rare spawn mobs in the open world. Keep Track!",
     "Get to the Badlands FP the hard way, Running from Stranglethorn through Blackrock... While flagged",
     "Complete at least two of the Alliance dungeons",
-    "Be the Saviour of Darkshire. Kill Stitches before level 41.",
+    "Saviour of Darkshire. Kill Stitches before level 41.",
     "Gain Honored with one of the Centaur clans",
     "Do all three of the mechanical chicken escorts",
     "Roll a 100 on a dungeon Item roll",
