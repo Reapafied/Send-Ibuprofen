@@ -33,7 +33,7 @@ const DEFAULT_CHALLENGES = [
     "Lose a /roll 100 for a dungeon item by less than 5 points",
     "Save a random player from dying in the open world (Level 20+)",
     "Complete 3 new dungeons flawless (No deaths No wipes)",
-    "Stay flagged anytime you are in Hillsbrad until you complete the Hearcules rod quest. You MUST fight any flagged alliance.",
+    "Stay flagged anytime you are in Hillsbrad until you complete the Helcular's Rod quest. You MUST fight any flagged alliance.",
     "Kill one of the Patrolling Eite Dragons around the world. Example: Narillasanz, Brimgore ect.",
     "Fish up a junk item or rare fish in enemy territory (Stormwind, Ironforge ect)",
     "Complete 100% of quests within a non starting zone",
