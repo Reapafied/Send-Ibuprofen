@@ -19,7 +19,7 @@ const DEFAULT_CHALLENGES = [
     "Get to the Badlands FP the hard way, Running from Stranglethorn through Blackrock",
     "Complete Gnomer clean. No buttpulls no jump skips",
     "Solo a major class quest battle. Example WW Axe elite elemental.",
-    "Defend Crossroads or Tarren Mill from an Alliance gank",
+    "Gain Honored with one of the Centaur clans",
     "Do all three of the mechanical chicken escorts",
     "Roll a 100 on a dungeon Item NEED roll",
     "Whitness someone Die to fall damage from Thousand Needles or TB Elevators",
