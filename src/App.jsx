@@ -28,7 +28,7 @@ const DEFAULT_CHALLENGES = [
     "Capture or Help defend each point in AB In a single round",
     "Kill a Quest or World elite by kiting it to town guards. Solo.",
     "Witness or post a Chuck Norris joke in Barrens Chat",
-    "Kill VanCleef within 30 minutes of entering Deadmines",
+    "Kill Herod while pulling all his trainees at once",
     "Create a campsite OUTSIDE a town and have at least 5 other players join you",
     "Lose a /roll 100 for a dungeon item by less than 5 points",
     "Save a random player from dying in the open world (Level 20+)",
