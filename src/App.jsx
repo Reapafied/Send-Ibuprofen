@@ -20,7 +20,7 @@ const DEFAULT_CHALLENGES = [
     "Complete Gnomer clean. No buttpulls no jump skips",
     "Solo a major class quest battle. Example WW Axe elite elemental.",
     "Defend Crossroads or Tarren Mill from an Alliance gank",
-    "Highfive Rexxar. Don't ask general where he is.",
+    "Do all three of the mechanical chicken escorts",
     "Roll a 100 on a dungeon Item NEED roll",
     "Whitness someone Die to fall damage from Thousand Needles or TB Elevators",
     "Survive a fall with less than 5% HP",
