@@ -26,7 +26,7 @@ const DEFAULT_CHALLENGES = [
     "Survive a fall with less than 5% HP",
     "Capture a Flag in WSG",
     "Capture or Help defend each point in AB In a single round",
-    "Kill a Quest or World elite by kiting it to town guards. Fuck you Terk",
+    "Kill a Quest or World elite by kiting it to town guards. Solo.",
     "Witness or post a Chuck Norris joke in Barrens Chat",
     "Kill VanCleef within 30 minutes of entering Deadmines",
     "Create a campsite OUTSIDE a town and have at least 5 other players join you",
