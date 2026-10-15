@@ -23,7 +23,7 @@ const DEFAULT_CHALLENGES = [
     "Do all three of the mechanical chicken escorts",
     "Roll a 100 on a dungeon Item roll",
     "Gain every bloodshard buff at once in the Barrens",
-    "Reach the Dancing Troll Village",
+    "It's dangerous to go alone, Complete Linken's Chain in Ungoro",
     "Capture a Flag in WSG",
     "Capture or defend each point in AB In a single round",
     "Kill a Quest or World elite by kiting it to town guards. Solo.",
