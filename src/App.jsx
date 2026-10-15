@@ -22,7 +22,7 @@ const DEFAULT_CHALLENGES = [
     "Gain Honored with one of the Centaur clans",
     "Do all three of the mechanical chicken escorts",
     "Roll a 100 on a dungeon Item roll",
-    "Whitness someone Die to fall damage from Thousand Needles or TB Elevators",
+    "Gain every bloodshard buff at once in the Barrens",
     "Reach the Dancing Troll Village",
     "Capture a Flag in WSG",
     "Capture or Help defend each point in AB In a single round",
