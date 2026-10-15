@@ -21,7 +21,7 @@ const DEFAULT_CHALLENGES = [
     "Be the Saviour of Darkshire. Kill Stitches before level 41.",
     "Gain Honored with one of the Centaur clans",
     "Do all three of the mechanical chicken escorts",
-    "Roll a 100 on a dungeon Item NEED roll",
+    "Roll a 100 on a dungeon Item roll",
     "Whitness someone Die to fall damage from Thousand Needles or TB Elevators",
     "Reach the Dancing Troll Village",
     "Capture a Flag in WSG",
