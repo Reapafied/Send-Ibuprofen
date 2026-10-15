@@ -37,7 +37,7 @@ const DEFAULT_CHALLENGES = [
     "Kill one of the Patrolling Eite Dragons around the world. Example: Narillasanz, Brimgore ect. Before the mob is grey",
     "Fish up a junk item or rare fish in enemy territory (Stormwind, Ironforge ect)",
     "Complete 100% of quests within a non starting zone",
-    "Finish Mothers Milk. Pain",
+    "Complete the Land Ho! quest chain.",
     "As a group. Complete a wing of SM while everyone is wearing only vendor whites"
 ];
 
