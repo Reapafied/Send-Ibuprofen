@@ -36,7 +36,7 @@ const DEFAULT_CHALLENGES = [
     "Stay flagged anytime you are in Hillsbrad until you complete the Helcular's Rod quest. You MUST fight any flagged alliance.",
     "Kill one of the Patrolling Eite Dragons around the world. Example: Narillasanz, Brimgore ect. Before the mob is grey",
     "Fish up a junk item or rare fish in enemy territory (Stormwind, Ironforge ect)",
-    "Complete 100% of quests within a non starting zone",
+    "Complete Hilary's Necklace While Flagged.",
     "Complete the Land Ho! quest chain.",
     "As a group. Complete a wing of SM while everyone is wearing only vendor whites"
 ];
