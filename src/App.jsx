@@ -21,7 +21,7 @@ const DEFAULT_CHALLENGES = [
     "Saviour of Darkshire. Kill Stitches before level 41.",
     "Gain Honored with one of the Centaur clans",
     "Do all three of the mechanical chicken escorts",
-    "Roll a 100 on a dungeon Item roll",
+    "Gain Revered with any of the new Factions.",
     "Gain every bloodshard buff at once in the Barrens",
     "It's dangerous to go alone, Complete Linken's Chain in Ungoro",
     "Capture a Flag in WSG",
