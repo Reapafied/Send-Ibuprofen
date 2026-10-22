@@ -29,15 +29,15 @@ const DEFAULT_CHALLENGES = [
     "Kill a Quest or World elite by kiting it to town guards. Solo.",
     "I guess this will do. Complete a level 40+ Dungeon with the the full group spec'd dps",
     "Who forgot their totems? Kill Herod while pulling all his trainees at once",
-    "As Horde, Find and Complete the Captian Sanders' Treasure Map. Don't use an addon. Read the quest!",
+    "As Horde, Find and Complete the Captian Sanders' Treasure Map. Don't use an addon. Read the quest! (Level 10)",
     "Lose a /roll 100 for a dungeon item by less than 5 points",
     "Save a random player from dying in the open world (Level 20+)",
     "Complete 3 new dungeons flawless (No deaths No wipes)",
     "Stay flagged anytime you are in Hillsbrad until you complete the Helcular's Rod quest. You MUST fight any flagged alliance.",
     "Kill one of the Patrolling Eite Dragons around the world. Example: Narillasanz, Brimgore ect. Before the mob is grey",
-    "Complete Cortello's Riddle using only the ingame quest text",
+    "Complete Cortello's Riddle using only the ingame quest text (Level 35)",
     "Complete Hilary's Necklace While Flagged.",
-    "Complete the Land Ho! quest chain.",
+    "Complete the Land Ho! quest chain. (Level 45)",
     "As a group. Complete a wing of SM while everyone is wearing only vendor whites"
 ];
 
