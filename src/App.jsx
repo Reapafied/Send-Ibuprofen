@@ -29,7 +29,7 @@ const DEFAULT_CHALLENGES = [
     "Kill a Quest or World elite by kiting it to town guards. Solo.",
     "I guess this will do. Complete a level 40+ Dungeon with the the full group spec'd dps",
     "Who forgot their totems? Kill Herod while pulling all his trainees at once",
-    "Create a campsite OUTSIDE a town and have at least 5 other players join you",
+    "As Horde, Find and Complete the Captian Sanders' Treasure Map.",
     "Lose a /roll 100 for a dungeon item by less than 5 points",
     "Save a random player from dying in the open world (Level 20+)",
     "Complete 3 new dungeons flawless (No deaths No wipes)",
