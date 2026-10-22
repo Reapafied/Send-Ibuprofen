@@ -22,7 +22,7 @@ const DEFAULT_CHALLENGES = [
     "Gain Honored with one of the Centaur clans",
     "Do all three of the mechanical chicken escorts",
     "Gain Revered with any of the new Factions.",
-    "Gain every bloodshard buff at once in the Barrens",
+    "Finish every 'Test of' Quest from 1k needles. Don't look up the lore answers you coward.",
     "It's dangerous to go alone, Complete Linken's Chain in Ungoro",
     "Capture a Flag in WSG",
     "Capture or defend each point in AB In a single round",
