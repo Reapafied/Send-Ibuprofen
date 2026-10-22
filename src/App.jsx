@@ -36,7 +36,7 @@ const DEFAULT_CHALLENGES = [
     "Stay flagged anytime you are in Hillsbrad until you complete the Helcular's Rod quest. You MUST fight any flagged alliance.",
     "Kill one of the Patrolling Eite Dragons around the world. Example: Narillasanz, Brimgore ect. Before the mob is grey",
     "Complete Cortello's Riddle using only the ingame quest text (Level 35)",
-    "Complete Hilary's Necklace While Flagged.",
+    "Complete Hilary's Necklace While Flagged. (Level 15)",
     "Complete the Land Ho! quest chain. (Level 45)",
     "As a group. Complete a wing of SM while everyone is wearing only vendor whites"
 ];
