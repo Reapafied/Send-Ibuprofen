@@ -16,7 +16,7 @@ const DEFAULT_CHALLENGES = [
     "Savior of Silverpine, Find and Kill an Elite Son of Arugal by level 25",
     "Ride the Deeprun Tram and survive",
     "Rare Hunter: Kill 10 different rare spawn mobs in the open world. Keep Track!",
-    "Get to the Badlands FP the hard way, Running from Stranglethorn through Blackrock... While flagged",
+    "Get to the Badlands FP the hard way, Running from Stranglethorn through Blackrock While flagged",
     "Complete at least two of the Alliance dungeons",
     "Saviour of Darkshire. Kill Stitches before level 41.",
     "Gain Honored with one of the Centaur clans",
