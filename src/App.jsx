@@ -27,7 +27,7 @@ const DEFAULT_CHALLENGES = [
     "Capture a Flag in WSG",
     "Capture or defend each point in AB In a single round",
     "Kill a Quest or World elite by kiting it to town guards. Solo.",
-    "I guess this will do. Complete a level 40+ Dungeon with the the full group spec'd dps",
+    "Message In a Bottle. (Level 42)",
     "Complete 'A Fine Mess' Inside Gnomeregan",
     "As Horde, Find and Complete the Captian Sanders' Treasure Map. Don't use an addon. Read the quest! (Level 10)",
     "Lose a /roll 100 for a dungeon item by less than 5 points",
