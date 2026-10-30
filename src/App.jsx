@@ -358,6 +358,14 @@ export default function App() {
 
       const boardKey = `s${boardIdx}`;
       const arrangement = { ...(player.arrangement || {}) };
+      const pairedBoardKey = arrangement[wildKey]?.startsWith('s')
+          ? arrangement[wildKey]
+          : null;
+
+      // A wild card stays paired with the board square it replaced.
+      if (pairedBoardKey && boardKey !== pairedBoardKey) return;
+      if (!pairedBoardKey && (arrangement[boardKey] || '').startsWith('w')) return;
+
       const boardCurrent = arrangement[boardKey] || boardKey;
       const wildCurrent = arrangement[wildKey] || wildKey;
 
