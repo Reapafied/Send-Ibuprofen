@@ -2,6 +2,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 
 const sampleRate = 22050;
 const outputDirectory = new URL('../public/audio/', import.meta.url);
+const stampSoundsDirectory = new URL('./stampSounds/', outputDirectory);
 
 function createWave(duration, notes) {
   const frameCount = Math.ceil(sampleRate * duration);
@@ -49,11 +50,22 @@ function createWave(duration, notes) {
   return wave;
 }
 
-const sounds = {
+const stampSounds = {
   'stamp.wav': createWave(0.19, [
     { frequency: 620, start: 0, duration: 0.13, gain: 0.48 },
     { frequency: 930, start: 0.035, duration: 0.15, gain: 0.34 }
-  ]),
+  ])
+};
+
+const rootSounds = {
+  'wildcard-swap.wav': createWave(0.42, [
+    { frequency: 330, start: 0, duration: 0.16, gain: 0.3, wave: 'triangle' },
+    { frequency: 494, start: 0.12, duration: 0.18, gain: 0.34, wave: 'triangle' },
+    { frequency: 740, start: 0.25, duration: 0.17, gain: 0.28, wave: 'triangle' }
+  ])
+};
+
+const unusedLegacySounds = {
   'bingo.wav': createWave(0.82, [
     { frequency: 523.25, start: 0, duration: 0.23, gain: 0.32 },
     { frequency: 659.25, start: 0.16, duration: 0.25, gain: 0.32 },
@@ -68,8 +80,14 @@ const sounds = {
 };
 
 await mkdir(outputDirectory, { recursive: true });
-await Promise.all(Object.entries(sounds).map(([fileName, contents]) =>
-  writeFile(new URL(fileName, outputDirectory), contents)
-));
+await mkdir(stampSoundsDirectory, { recursive: true });
+await Promise.all([
+  ...Object.entries(stampSounds).map(([fileName, contents]) =>
+    writeFile(new URL(fileName, stampSoundsDirectory), contents)
+  ),
+  ...Object.entries(rootSounds).map(([fileName, contents]) =>
+    writeFile(new URL(fileName, outputDirectory), contents)
+  )
+]);
 
-console.log(`Generated ${Object.keys(sounds).join(', ')} in public/audio/`);
+console.log('Generated stamp and wildcard swap WAV assets');

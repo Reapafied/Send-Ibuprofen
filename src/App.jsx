@@ -222,18 +222,15 @@ export default function App() {
       setSyncStatus({ text: `Database error (${reason})`, color: 'text-red-400' });
   };
 
-  const playSound = (type) => {
-      try {
-          const soundFiles = {
-              stamp: 'stamp.wav',
-              bingo: 'bingo.wav',
-              opponentBingo: 'opponent-bingo.wav',
-              easterEgg: 'easteregg.wav'
-          };
-          const fileName = soundFiles[type];
-          if (!fileName) return;
+  const playRandomStampSound = () => {
+      const stampSounds = ['stamp.wav', 'stampOLD.wav'];
+      const fileName = stampSounds[Math.floor(Math.random() * stampSounds.length)];
+      playSoundFile(`audio/stampSounds/${fileName}`);
+  };
 
-          const audio = new Audio(`${import.meta.env.BASE_URL}audio/${fileName}`);
+  const playSoundFile = (assetPath) => {
+      try {
+          const audio = new Audio(`${import.meta.env.BASE_URL}${assetPath}`);
           audio.volume = 0.75;
           audio.play().catch((error) => {
               console.warn('Audio playback was blocked or unavailable:', error);
@@ -241,6 +238,22 @@ export default function App() {
       } catch (error) {
           console.warn('Audio playback error:', error);
       }
+  };
+
+  const playSound = (type) => {
+      if (type === 'stamp') {
+          playRandomStampSound();
+          return;
+      }
+
+      const soundFiles = {
+          bingo: 'audio/bingo.wav',
+          opponentBingo: 'audio/opponent-bingo.wav',
+          easterEgg: 'audio/easteregg.wav',
+          wildcardSwap: 'audio/wildcard-swap.wav'
+      };
+      const assetPath = soundFiles[type];
+      if (assetPath) playSoundFile(assetPath);
   };
 
   const seededRandom = (seedStr) => {
@@ -399,7 +412,7 @@ export default function App() {
           const playerRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}/players/${myPlayerId}`);
           update(playerRef, updates).catch(handleDatabaseError);
       }
-      playSound('stamp');
+      playSound('wildcardSwap');
   };
 
   const changeMyNamePrompt = () => {
