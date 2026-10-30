@@ -48,7 +48,7 @@ const WILDCARDS = [
     "WILD: Hit a 100 need roll",
     "WILD: Successfully catch a fish from inside both Stormwind and IronForge",
     "WILD: Take a sexy screenshot of yourself in the Goldshire Inn's bed.UwU",
-    "WILD: Replace me with a wildcard challenge #4",
+    "WILD: Loot the Gurubashi arena chest",
     "WILD: Replace me with a wildcard challenge #5"
 ];
 
