@@ -5,6 +5,7 @@
   "type": "module",
   "homepage": "https://reapafied.github.io/Send-Ibuprofen/",
   "scripts": {
+    "convert:audio": "node scripts/convert-mp3-to-wav.mjs",
     "dev": "node scripts/generate-audio-assets.mjs && vite",
     "prebuild": "node scripts/generate-audio-assets.mjs",
     "build": "vite build",
