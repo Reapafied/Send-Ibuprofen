@@ -1,10 +1,13 @@
 {
   "files": [
+    "beertopside.wav",
     "correct.wav",
     "family-feud-good-answer.wav",
-    "Gnome sound effect.wav",
+    "gman_noreg.wav",
+    "gnome_effect_sound.wav",
     "grunt-birthday-party.wav",
     "Murloc-sound.wav",
-    "stamp.wav"
+    "stamp.wav",
+    "Wow!.wav"
   ]
 }
