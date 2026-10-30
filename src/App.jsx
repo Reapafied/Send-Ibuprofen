@@ -45,8 +45,8 @@ const DEFAULT_CHALLENGES = [
 // square (or tap a wild card, then tap a square) to swap it in.
 // TODO: replace these placeholders with your own wild card challenges.
 const WILDCARDS = [
-    "WILD: Replace me with a wildcard challenge #1",
-    "WILD: Replace me with a wildcard challenge #2",
+    "Hit a 100 need roll",
+    "Successfully catch a fish from inside both Stormwind and IronForge",
     "WILD: Replace me with a wildcard challenge #3",
     "WILD: Replace me with a wildcard challenge #4",
     "WILD: Replace me with a wildcard challenge #5"
