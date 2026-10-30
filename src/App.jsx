@@ -49,7 +49,7 @@ const WILDCARDS = [
     "WILD: Successfully catch a fish from inside both Stormwind and IronForge",
     "WILD: Take a sexy screenshot of yourself in the Goldshire Inn's bed.UwU",
     "WILD: Loot the Gurubashi arena chest",
-    "WILD: Replace me with a wildcard challenge #5"
+    "WILD: Make a dad joke so cringe that you audibly make Reapafied groan"
 ];
 
 const WIN_PATTERNS = [
