@@ -41,6 +41,17 @@ const DEFAULT_CHALLENGES = [
     "As a group. Complete a wing of SM while everyone is wearing only vendor whites"
 ];
 
+// Wild card challenges shown to the left of the board. Drag one onto a board
+// square (or tap a wild card, then tap a square) to swap it in.
+// TODO: replace these placeholders with your own wild card challenges.
+const WILDCARDS = [
+    "WILD: Replace me with a wildcard challenge #1",
+    "WILD: Replace me with a wildcard challenge #2",
+    "WILD: Replace me with a wildcard challenge #3",
+    "WILD: Replace me with a wildcard challenge #4",
+    "WILD: Replace me with a wildcard challenge #5"
+];
+
 const WIN_PATTERNS = [
     [0,1,2,3,4], [5,6,7,8,9], [10,11,12,13,14], [15,16,17,18,19], [20,21,22,23,24],
     [0,5,10,15,20], [1,6,11,16,21], [2,7,12,17,22], [3,8,13,18,23], [4,9,14,19,24],
@@ -84,6 +95,11 @@ export default function App() {
   
   const [activeModal, setActiveModal] = useState(null);
   const [customPoolText, setCustomPoolText] = useState(DEFAULT_CHALLENGES.join('\n'));
+
+  // Wild card interaction state
+  const [draggedWild, setDraggedWild] = useState(null);
+  const [selectedWild, setSelectedWild] = useState(null);
+  const [dragOverIdx, setDragOverIdx] = useState(null);
 
   const dbRef = useRef(null);
     const previousBingoCountsRef = useRef(null);
@@ -259,6 +275,14 @@ export default function App() {
       return grid25;
   };
 
+  // Maps slot keys to challenge text: s0..s24 = board squares, w0..w4 = wild cards
+  const getSlotTexts = (seed) => {
+      const texts = {};
+      generateCardItems(seed).forEach((t, i) => { texts[`s${i}`] = t; });
+      WILDCARDS.forEach((t, i) => { texts[`w${i}`] = t; });
+      return texts;
+  };
+
   const checkBingoLines = (stamps) => {
       let winCount = 0;
       let winningIndices = new Set();
@@ -324,6 +348,52 @@ export default function App() {
       }
   };
 
+  // Swap a wild card slot (e.g. "w2") with a board square index. The wild card's
+  // text moves onto the board and the square's challenge moves into the wild card slot,
+  // so dragging it back undoes the swap.
+  const swapSlots = (boardIdx, wildKey) => {
+      if (boardIdx === 12) return;
+      const player = roomData.players?.[myPlayerId];
+      if (!player) return;
+
+      const boardKey = `s${boardIdx}`;
+      const arrangement = { ...(player.arrangement || {}) };
+      const boardCurrent = arrangement[boardKey] || boardKey;
+      const wildCurrent = arrangement[wildKey] || wildKey;
+
+      // Swap what each position displays; drop entries that return to default
+      const next = { [boardKey]: wildCurrent, [wildKey]: boardCurrent };
+      const updates = {};
+      Object.entries(next).forEach(([pos, item]) => {
+          if (item === pos) {
+              delete arrangement[pos];
+              updates[`arrangement/${pos}`] = null;
+          } else {
+              arrangement[pos] = item;
+              updates[`arrangement/${pos}`] = item;
+          }
+      });
+
+      // A newly swapped-in challenge hasn't been completed yet
+      const stamps = { ...(player.stamps || {}) };
+      delete stamps[boardIdx];
+      updates[`stamps/${boardIdx}`] = null;
+
+      setRoomData((current) => ({
+          ...current,
+          players: {
+              ...(current.players || {}),
+              [myPlayerId]: { ...player, arrangement, stamps }
+          }
+      }));
+
+      if (dbRef.current) {
+          const playerRef = ref(dbRef.current, `wow_bingo_rooms/${currentRoomId}/players/${myPlayerId}`);
+          update(playerRef, updates).catch(handleDatabaseError);
+      }
+      playSound('stamp');
+  };
+
   const changeMyNamePrompt = () => {
       const newName = prompt("Enter your character / player name:", myPlayerName);
       if (!newName || !newName.trim()) return;
@@ -343,7 +413,8 @@ export default function App() {
           name: myPlayerName,
           stamps: { 12: true }
       };
-      const updatedPlayer = { ...existingPlayer, seed };
+      // Changing the seed reshuffles the card, so clear any wild card swaps
+      const updatedPlayer = { ...existingPlayer, seed, arrangement: null };
       setRoomData((current) => ({
           ...current,
           players: { ...(current.players || {}), [myPlayerId]: updatedPlayer }
@@ -387,7 +458,8 @@ export default function App() {
               id: player.id || playerId,
               name: player.name || 'Mankrik',
               seed: 'BARRENS2026',
-              stamps: { 12: true }
+              stamps: { 12: true },
+              arrangement: null
           }])
       );
       try {
@@ -438,6 +510,9 @@ export default function App() {
 
     const activeSeed = activeViewPlayer.seed ?? roomData.seed ?? 'BARRENS2026';
     const activeItems = generateCardItems(activeSeed);
+    const slotTexts = getSlotTexts(activeSeed);
+    const activeArrangement = activeViewPlayer.arrangement || {};
+    const itemAt = (key) => slotTexts[activeArrangement[key] || key];
   const activeStamps = activeViewPlayer.stamps || {};
   const { winCount: activeWins, winningIndices } = checkBingoLines(activeStamps);
   const stampedTotal = Object.keys(activeStamps).filter(k => activeStamps[k]).length;
@@ -559,50 +634,113 @@ export default function App() {
                     </div>
                 </div>
 
-                <div className="bg-[#1a1414] p-3 md:p-5 rounded-2xl border-2 border-[#3f2d2d] shadow-2xl relative">
-                    <div className="grid grid-cols-5 gap-1.5 md:gap-3 mb-2 md:mb-3 text-center font-['Cinzel'] font-extrabold text-lg md:text-2xl text-amber-500 tracking-widest">
-                        <div className="py-1 bg-[#0e0b0b] rounded border border-red-950/40">B</div>
-                        <div className="py-1 bg-[#0e0b0b] rounded border border-red-950/40">I</div>
-                        <div className="py-1 bg-[#0e0b0b] rounded border border-red-950/40">N</div>
-                        <div className="py-1 bg-[#0e0b0b] rounded border border-red-950/40">G</div>
-                        <div className="py-1 bg-[#0e0b0b] rounded border border-red-950/40">O</div>
+                <div className="bg-[#1a1414] p-3 md:p-5 rounded-2xl border-2 border-[#3f2d2d] shadow-2xl relative flex gap-2 md:gap-4">
+                    {/* Wild card column */}
+                    <div className="flex flex-col w-20 md:w-36 shrink-0">
+                        <div className="mb-2 md:mb-3 py-1 text-center bg-[#0e0b0b] rounded border border-amber-900/60 font-['Cinzel'] font-extrabold text-lg md:text-2xl text-amber-400 tracking-widest">
+                            <i className="fa-solid fa-wand-sparkles"></i>
+                        </div>
+                        <div className="grid grid-rows-5 gap-1.5 md:gap-3 flex-1">
+                            {WILDCARDS.map((_, w) => {
+                                const key = `w${w}`;
+                                const isSelected = selectedWild === key;
+                                return (
+                                    <div
+                                        key={key}
+                                        draggable={isEditingOwnCard}
+                                        onDragStart={(e) => {
+                                            e.dataTransfer.setData('text/plain', key);
+                                            e.dataTransfer.effectAllowed = 'move';
+                                            setDraggedWild(key);
+                                            setSelectedWild(null);
+                                        }}
+                                        onDragEnd={() => { setDraggedWild(null); setDragOverIdx(null); }}
+                                        onClick={() => {
+                                            if (!isEditingOwnCard) return;
+                                            setSelectedWild(isSelected ? null : key);
+                                        }}
+                                        className={`p-2 rounded-xl border-2 border-dashed flex items-center justify-center text-center select-none min-h-[90px] md:min-h-[115px] text-[9px] md:text-xs font-semibold leading-snug bg-amber-950/30 text-amber-200 ${
+                                            isEditingOwnCard ? 'cursor-grab active:cursor-grabbing hover:bg-amber-900/30' : 'cursor-default'
+                                        } ${isSelected ? 'border-amber-300 ring-2 ring-amber-400' : 'border-amber-700/70'}`}
+                                    >
+                                        {itemAt(key)}
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
 
-                    <div className="bingo-grid grid grid-cols-5 gap-1.5 md:gap-3">
-                        {activeItems.map((text, idx) => {
-                            const isStamped = !!activeStamps[idx];
-                            const isWinningSquare = winningIndices.has(idx);
-                            const isFreeSpace = idx === 12;
+                    {/* Main board */}
+                    <div className="flex-1 min-w-0">
+                        <div className="grid grid-cols-5 gap-1.5 md:gap-3 mb-2 md:mb-3 text-center font-['Cinzel'] font-extrabold text-lg md:text-2xl text-amber-500 tracking-widest">
+                            <div className="py-1 bg-[#0e0b0b] rounded border border-red-950/40">B</div>
+                            <div className="py-1 bg-[#0e0b0b] rounded border border-red-950/40">I</div>
+                            <div className="py-1 bg-[#0e0b0b] rounded border border-red-950/40">N</div>
+                            <div className="py-1 bg-[#0e0b0b] rounded border border-red-950/40">G</div>
+                            <div className="py-1 bg-[#0e0b0b] rounded border border-red-950/40">O</div>
+                        </div>
 
-                            return (
-                                <div
-                                    key={idx}
-                                    onClick={() => toggleSquareStamp(activeViewPlayer.id, idx)}
-                                    className={`bingo-square relative p-2 md:p-3 rounded-xl border flex flex-col justify-between items-center text-center select-none min-h-[90px] md:min-h-[115px] ${
-                                        isEditingOwnCard ? 'cursor-pointer' : 'cursor-default'
-                                    } ${
-                                        isWinningSquare
-                                            ? 'bg-gradient-to-b from-amber-950/80 to-red-950/80 border-amber-500 shadow-lg font-bold'
-                                            : isStamped
-                                            ? 'bg-red-950/60 border-red-800 text-amber-200 stamped'
-                                            : 'bg-[#0e0b0b] hover:bg-gray-800/80 border-[#3f2d2d] text-gray-300'
-                                    }`}
-                                >
-                                    <div className={`text-[10px] md:text-xs font-semibold leading-snug ${isFreeSpace ? 'text-amber-400 font-bold font-["Cinzel"]' : ''}`}>
-                                        {text}
+                        <div className="bingo-grid grid grid-cols-5 gap-1.5 md:gap-3">
+                            {activeItems.map((_, idx) => {
+                                const text = itemAt(`s${idx}`);
+                                const isStamped = !!activeStamps[idx];
+                                const isWinningSquare = winningIndices.has(idx);
+                                const isFreeSpace = idx === 12;
+                                const canReceiveWild = isEditingOwnCard && !isFreeSpace;
+
+                                return (
+                                    <div
+                                        key={idx}
+                                        onClick={() => {
+                                            if (selectedWild && canReceiveWild) {
+                                                swapSlots(idx, selectedWild);
+                                                setSelectedWild(null);
+                                                return;
+                                            }
+                                            toggleSquareStamp(activeViewPlayer.id, idx);
+                                        }}
+                                        onDragOver={(e) => {
+                                            if (draggedWild && canReceiveWild) {
+                                                e.preventDefault();
+                                                setDragOverIdx(idx);
+                                            }
+                                        }}
+                                        onDragLeave={() => setDragOverIdx((cur) => (cur === idx ? null : cur))}
+                                        onDrop={(e) => {
+                                            e.preventDefault();
+                                            const key = e.dataTransfer.getData('text/plain') || draggedWild;
+                                            if (canReceiveWild && key && key.startsWith('w')) swapSlots(idx, key);
+                                            setDraggedWild(null);
+                                            setDragOverIdx(null);
+                                        }}
+                                        className={`bingo-square relative p-2 md:p-3 rounded-xl border flex flex-col justify-between items-center text-center select-none min-h-[90px] md:min-h-[115px] ${
+                                            isEditingOwnCard ? 'cursor-pointer' : 'cursor-default'
+                                        } ${dragOverIdx === idx ? 'ring-2 ring-amber-400 scale-[1.03]' : ''} ${
+                                            selectedWild && canReceiveWild ? 'ring-1 ring-amber-500/50' : ''
+                                        } ${
+                                            isWinningSquare
+                                                ? 'bg-gradient-to-b from-amber-950/80 to-red-950/80 border-amber-500 shadow-lg font-bold'
+                                                : isStamped
+                                                ? 'bg-red-950/60 border-red-800 text-amber-200 stamped'
+                                                : 'bg-[#0e0b0b] hover:bg-gray-800/80 border-[#3f2d2d] text-gray-300'
+                                        }`}
+                                    >
+                                        <div className={`text-[10px] md:text-xs font-semibold leading-snug ${isFreeSpace ? 'text-amber-400 font-bold font-["Cinzel"]' : ''}`}>
+                                            {text}
+                                        </div>
+                                        {isStamped ? (
+                                            <div className="stamp-badge stamp-animated text-red-500 text-2xl md:text-3xl mt-1">
+                                                <i className="fa-solid fa-shield-halved"></i>
+                                            </div>
+                                        ) : (
+                                            <div className="text-gray-600 text-xs mt-1">
+                                                <i className="fa-regular fa-square"></i>
+                                            </div>
+                                        )}
                                     </div>
-                                    {isStamped ? (
-                                        <div className="stamp-badge stamp-animated text-red-500 text-2xl md:text-3xl mt-1">
-                                            <i className="fa-solid fa-shield-halved"></i>
-                                        </div>
-                                    ) : (
-                                        <div className="text-gray-600 text-xs mt-1">
-                                            <i className="fa-regular fa-square"></i>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
+                                );
+                            })}
+                        </div>
                     </div>
                 </div>
             </section>
