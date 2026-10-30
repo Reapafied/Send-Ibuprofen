@@ -30,7 +30,7 @@ const DEFAULT_CHALLENGES = [
     "Message In a Bottle. (Level 42)",
     "Complete 'A Fine Mess' Inside Gnomeregan",
     "As Horde, Find and Complete the Captian Sanders' Treasure Map. Don't use an addon. Read the quest! (Level 10)",
-    "Lose a /roll 100 for a dungeon item by less than 5 points",
+    "Get the Mallet of Zul'Farrak (Level 45)",
     "Save a random player from dying in the open world (Level 20+)",
     "Complete 3 new dungeons flawless (No deaths No wipes)",
     "Stay flagged anytime you are in Hillsbrad until you complete the Helcular's Rod quest. You MUST fight any flagged alliance.",
