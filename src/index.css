@@ -45,7 +45,7 @@ body {
     z-index: 100;
     pointer-events: none;
     background: rgba(255, 255, 255, 1);
-    animation: flashbangFade 1.8s ease-out forwards;
+    animation: flashbangFade 10s ease-out forwards;
 }
 
 @keyframes flashbangFade {

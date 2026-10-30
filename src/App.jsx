@@ -100,7 +100,7 @@ export default function App() {
   const [draggedWild, setDraggedWild] = useState(null);
   const [selectedWild, setSelectedWild] = useState(null);
   const [dragOverIdx, setDragOverIdx] = useState(null);
-  const [flashbangId, setFlashbangId] = useState(0);
+  const [isFlashbangActive, setIsFlashbangActive] = useState(false);
 
   const dbRef = useRef(null);
   const previousBingoCountsRef = useRef(null);
@@ -250,7 +250,11 @@ export default function App() {
       lastStampSoundRef.current = fileName;
       playSoundFile(`audio/stampSounds/${fileName}`);
       if (fileName.toLowerCase() === 'cs-flashbang.wav') {
-          setFlashbangId((current) => current + 1);
+          setIsFlashbangActive(false);
+          window.requestAnimationFrame(() => {
+              setIsFlashbangActive(true);
+              window.setTimeout(() => setIsFlashbangActive(false), 10000);
+          });
       }
   };
 
@@ -576,8 +580,8 @@ export default function App() {
 
   return (
     <div className="flex flex-col min-h-screen text-gray-200">
-        {flashbangId > 0 && (
-            <div key={flashbangId} className="flashbang-overlay" aria-hidden="true" />
+        {isFlashbangActive && (
+            <div className="flashbang-overlay" aria-hidden="true" />
         )}
         <header className="no-print bg-[#1a1414] border-b border-[#3f2d2d] sticky top-0 z-40 shadow-xl">
             <div className="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
