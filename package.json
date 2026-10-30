@@ -5,7 +5,8 @@
   "type": "module",
   "homepage": "https://reapafied.github.io/Send-Ibuprofen/",
   "scripts": {
-    "dev": "vite",
+    "dev": "node scripts/generate-audio-assets.mjs && vite",
+    "prebuild": "node scripts/generate-audio-assets.mjs",
     "build": "vite build",
     "preview": "vite preview"
   },

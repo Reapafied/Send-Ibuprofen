@@ -102,8 +102,10 @@ export default function App() {
   const [dragOverIdx, setDragOverIdx] = useState(null);
 
   const dbRef = useRef(null);
-    const previousBingoCountsRef = useRef(null);
-    const previousPlayerNamesRef = useRef(null);
+  const previousBingoCountsRef = useRef(null);
+  const previousPlayerNamesRef = useRef(null);
+  const lastStampSoundRef = useRef(null);
+  const stampSoundFilesRef = useRef([]);
 
   // Construct Firebase Config Object from env
   const getFirebaseConfig = () => {
@@ -222,9 +224,29 @@ export default function App() {
       setSyncStatus({ text: `Database error (${reason})`, color: 'text-red-400' });
   };
 
-  const playRandomStampSound = () => {
-      const stampSounds = ['stamp.wav', 'stampOLD.wav'];
-      const fileName = stampSounds[Math.floor(Math.random() * stampSounds.length)];
+  const loadStampSoundFiles = async () => {
+      if (stampSoundFilesRef.current.length) return stampSoundFilesRef.current;
+      try {
+          const response = await fetch(`${import.meta.env.BASE_URL}audio/stampSounds/manifest.json`, { cache: 'no-store' });
+          if (!response.ok) throw new Error(`Stamp manifest returned ${response.status}`);
+          const manifest = await response.json();
+          stampSoundFilesRef.current = Array.isArray(manifest.files)
+              ? manifest.files.filter((fileName) => fileName.toLowerCase().endsWith('.wav'))
+              : [];
+      } catch (error) {
+          console.warn('Unable to load stamp sound manifest:', error);
+      }
+      return stampSoundFilesRef.current;
+  };
+
+  const playRandomStampSound = async () => {
+      const stampSounds = await loadStampSoundFiles();
+      if (!stampSounds.length) return;
+
+      const choices = stampSounds.filter((fileName) => fileName !== lastStampSoundRef.current);
+      const pool = choices.length ? choices : stampSounds;
+      const fileName = pool[Math.floor(Math.random() * pool.length)];
+      lastStampSoundRef.current = fileName;
       playSoundFile(`audio/stampSounds/${fileName}`);
   };
 

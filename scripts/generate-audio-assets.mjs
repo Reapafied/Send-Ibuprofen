@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readdir, writeFile } from 'node:fs/promises';
 
 const sampleRate = 22050;
 const outputDirectory = new URL('../public/audio/', import.meta.url);
@@ -90,4 +90,14 @@ await Promise.all([
   )
 ]);
 
-console.log('Generated stamp and wildcard swap WAV assets');
+const stampEntries = await readdir(stampSoundsDirectory, { withFileTypes: true });
+const stampFiles = stampEntries
+  .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith('.wav'))
+  .map((entry) => entry.name)
+  .sort((a, b) => a.localeCompare(b));
+await writeFile(
+  new URL('manifest.json', stampSoundsDirectory),
+  `${JSON.stringify({ files: stampFiles }, null, 2)}\n`
+);
+
+console.log(`Generated stamp manifest with ${stampFiles.length} WAV files`);
