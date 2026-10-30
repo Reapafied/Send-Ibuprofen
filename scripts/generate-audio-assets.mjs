@@ -50,13 +50,6 @@ function createWave(duration, notes) {
   return wave;
 }
 
-const stampSounds = {
-  'stamp.wav': createWave(0.19, [
-    { frequency: 620, start: 0, duration: 0.13, gain: 0.48 },
-    { frequency: 930, start: 0.035, duration: 0.15, gain: 0.34 }
-  ])
-};
-
 const rootSounds = {
   'wildcard-swap.wav': createWave(0.42, [
     { frequency: 330, start: 0, duration: 0.16, gain: 0.3, wave: 'triangle' },
@@ -81,14 +74,9 @@ const unusedLegacySounds = {
 
 await mkdir(outputDirectory, { recursive: true });
 await mkdir(stampSoundsDirectory, { recursive: true });
-await Promise.all([
-  ...Object.entries(stampSounds).map(([fileName, contents]) =>
-    writeFile(new URL(fileName, stampSoundsDirectory), contents)
-  ),
-  ...Object.entries(rootSounds).map(([fileName, contents]) =>
-    writeFile(new URL(fileName, outputDirectory), contents)
-  )
-]);
+await Promise.all(Object.entries(rootSounds).map(([fileName, contents]) =>
+  writeFile(new URL(fileName, outputDirectory), contents)
+));
 
 const stampEntries = await readdir(stampSoundsDirectory, { withFileTypes: true });
 const stampFiles = stampEntries
