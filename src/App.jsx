@@ -46,7 +46,7 @@ const DEFAULT_CHALLENGES = [
 // TODO: replace these placeholders with your own wild card challenges.
 const WILDCARDS = [
     "WILD: Hit a 100 need roll",
-    "WILD: Successfully catch a fish from inside both Stormwind and IronForge",
+    "WILD: Get your cozy sleeping bag",
     "WILD: Take a sexy screenshot of yourself in the Goldshire Inn's bed.UwU",
     "WILD: Loot the Gurubashi arena chest",
     "WILD: Make a dad joke so cringe that you audibly make Reapafied groan"
