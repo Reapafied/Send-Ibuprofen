@@ -30,7 +30,7 @@ const DEFAULT_CHALLENGES = [
     "Message In a Bottle. (Level 42)",
     "Complete 'A Fine Mess' Inside Gnomeregan",
     "As Horde, Find and Complete the Captian Sanders' Treasure Map. Don't use an addon. Read the quest! (Level 10)",
-    "Lose a /roll 100 for a dungeon item by less than 5 points",
+    "Get the Mallet of Zul'Farrak (Level 45)",
     "Save a random player from dying in the open world (Level 20+)",
     "Complete 3 new dungeons flawless (No deaths No wipes)",
     "Stay flagged anytime you are in Hillsbrad until you complete the Helcular's Rod quest. You MUST fight any flagged alliance.",
@@ -45,11 +45,11 @@ const DEFAULT_CHALLENGES = [
 // square (or tap a wild card, then tap a square) to swap it in.
 // TODO: replace these placeholders with your own wild card challenges.
 const WILDCARDS = [
-    "WILD: Replace me with a wildcard challenge #1",
-    "WILD: Replace me with a wildcard challenge #2",
-    "WILD: Replace me with a wildcard challenge #3",
-    "WILD: Replace me with a wildcard challenge #4",
-    "WILD: Replace me with a wildcard challenge #5"
+    "WILD: Hit a 100 need roll",
+    "WILD: Successfully catch a fish from inside both Stormwind and IronForge",
+    "WILD: Take a sexy screenshot of yourself in the Goldshire Inn's bed.UwU",
+    "WILD: Loot the Gurubashi arena chest",
+    "WILD: Make a dad joke so cringe that you audibly make Reapafied groan"
 ];
 
 const WIN_PATTERNS = [
