@@ -38,7 +38,7 @@ const DEFAULT_CHALLENGES = [
     "Complete Cortello's Riddle using only the ingame quest text (Level 35)",
     "Complete Hilary's Necklace While Flagged. (Level 15)",
     "Complete the Land Ho! quest chain. (Level 45)",
-    "As a group. Complete a wing of SM while everyone is wearing only vendor whites"
+    "Reach 150 on your 2 Main professions Plus Cooking & Fishing"
 ];
 
 // Wild card challenges shown to the left of the board. Drag one onto a board
